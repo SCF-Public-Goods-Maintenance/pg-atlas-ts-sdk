@@ -1,5 +1,5 @@
 {
-  "name": "@scf/pg-atlas-sdk",
+  "name": "@pg-atlas/sdk",
   "version": "1.0.0",
   "description": "SDK for PG Atlas API",
   "type": "module",
