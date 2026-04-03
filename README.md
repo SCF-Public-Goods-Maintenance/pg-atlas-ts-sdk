@@ -36,7 +36,7 @@ client.setConfig({
   apiKey: "your-github-oidc-token",
 });
 
-const result = await ingestSbom(JSON.stringify(mySbom));
+const result = await ingestSbom(mySbom); 
 console.log(`Accepted ${result.package_count} packages for ${result.repository}`);
 ```
 
@@ -74,9 +74,9 @@ The SDK can be configured using `client.setConfig` for global usage or by passin
 
 | Attribute | Default | Description |
 | --------- | ------- | ----------- |
-| `baseUrl` | `http://localhost:8000` | The root URL of the PG Atlas API. |
+| `baseUrl` | `https://pg-atlas-backend-h8gen.ondigitalocean.app` | The root URL of the PG Atlas API. |
 | `apiKey`  | `""` | The Bearer token for authenticated requests (e.g. GitHub OIDC JWT). |
 
 ## License
 
-MIT
+MPL-2.0
