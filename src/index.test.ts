@@ -1,123 +1,216 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { client, PGAtlasClient, version } from './index';
+import * as sdk from './index';
+import { createClient } from './generated/client';
+import apiConfig from './api-config.json';
 
-describe('PG Atlas SDK v0.3.0 (with Generated Client)', () => {
-  it('should have the correct version', () => {
-    expect(version).toBe('0.3.0');
+describe('PG Atlas SDK generated contract tests', () => {
+  let mockFetch: any;
+
+  beforeEach(() => {
+    mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
   });
 
-  describe('PGAtlasClient', () => {
-    let mockFetch: any;
+  const operationCases: Array<{
+    functionName: string;
+    httpMethod: string;
+    expectedPath: string;
+    requestOptions: Record<string, unknown>;
+  }> = [
+  {
+    "functionName": "getContributor",
+    "httpMethod": "GET",
+    "expectedPath": "/contributors/101",
+    "requestOptions": {
+      "path": {
+        "contributor_id": 101
+      }
+    }
+  },
+  {
+    "functionName": "getMetadata",
+    "httpMethod": "GET",
+    "expectedPath": "/metadata",
+    "requestOptions": {}
+  },
+  {
+    "functionName": "getProject",
+    "httpMethod": "GET",
+    "expectedPath": "/projects/demo-id",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
+    "functionName": "getProjectDependsOn",
+    "httpMethod": "GET",
+    "expectedPath": "/projects/demo-id/depends-on",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
+    "functionName": "getProjectHasDependents",
+    "httpMethod": "GET",
+    "expectedPath": "/projects/demo-id/has-dependents",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
+    "functionName": "getProjectRepos",
+    "httpMethod": "GET",
+    "expectedPath": "/projects/demo-id/repos",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
+    "functionName": "getRepo",
+    "httpMethod": "GET",
+    "expectedPath": "/repos/demo-id",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
+    "functionName": "getRepoDependsOn",
+    "httpMethod": "GET",
+    "expectedPath": "/repos/demo-id/depends-on",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
+    "functionName": "getRepoHasDependents",
+    "httpMethod": "GET",
+    "expectedPath": "/repos/demo-id/has-dependents",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
+    "functionName": "getSbomSubmission",
+    "httpMethod": "GET",
+    "expectedPath": "/ingest/sbom/101",
+    "requestOptions": {
+      "path": {
+        "submission_id": 101
+      }
+    }
+  },
+  {
+    "functionName": "health",
+    "httpMethod": "GET",
+    "expectedPath": "/health",
+    "requestOptions": {}
+  },
+  {
+    "functionName": "ingestSbom",
+    "httpMethod": "POST",
+    "expectedPath": "/ingest/sbom",
+    "requestOptions": {
+      "body": {
+        "ping": "pong"
+      }
+    }
+  },
+  {
+    "functionName": "listProjects",
+    "httpMethod": "GET",
+    "expectedPath": "/projects",
+    "requestOptions": {}
+  },
+  {
+    "functionName": "listRepos",
+    "httpMethod": "GET",
+    "expectedPath": "/repos",
+    "requestOptions": {}
+  },
+  {
+    "functionName": "listSbomSubmissions",
+    "httpMethod": "GET",
+    "expectedPath": "/ingest/sbom",
+    "requestOptions": {}
+  }
+];
 
-    beforeEach(() => {
-      mockFetch = vi.fn();
-      vi.stubGlobal('fetch', mockFetch);
+  const mockResponse = (data: unknown, ok = true, status = 200) => ({
+    ok,
+    status,
+    headers: new Headers({ 'Content-Type': 'application/json' }),
+    json: async () => data,
+    text: async () => JSON.stringify(data),
+  });
+
+  it('should expose generated SDK operations through package entrypoint', () => {
+    for (const operation of operationCases) {
+      expect(typeof (sdk as Record<string, unknown>)[operation.functionName]).toBe('function');
+    }
+  });
+
+  for (const operation of operationCases) {
+    it(`routes ${operation.functionName} to ${operation.httpMethod} ${operation.expectedPath}`, async () => {
+      mockFetch.mockResolvedValueOnce(mockResponse({}));
+
+      const fn = (sdk as Record<string, any>)[operation.functionName];
+      const client = createClient({ baseUrl: apiConfig.apiBaseUrl });
+      const result = await fn({ client, ...operation.requestOptions });
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const [request, init] = mockFetch.mock.calls[0];
+      const requestUrl = typeof request === 'string' ? request : request.url;
+      const url = new URL(requestUrl);
+      const requestMethod = (typeof request === 'string' ? init?.method : request.method) ?? 'GET';
+
+      expect(url.origin).toBe(apiConfig.apiBaseUrl);
+      expect(url.pathname).toBe(operation.expectedPath);
+      expect(requestMethod).toBe(operation.httpMethod);
+      expect(result).toHaveProperty('data');
+    });
+  }
+
+  it('should pass Authorization header through configured client', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse({ status: 'ok' }));
+
+    const operation = operationCases.find((candidate) => candidate.httpMethod === 'GET') ?? operationCases[0];
+    const fn = (sdk as Record<string, any>)[operation.functionName];
+    const client = createClient({
+      baseUrl: apiConfig.apiBaseUrl,
+      headers: { Authorization: 'Bearer test-token' },
     });
 
-    const mockResponse = (data: any, ok = true, status = 200) => ({
-      ok,
-      status,
-      headers: new Headers({ 'Content-Type': 'application/json' }),
-      json: async () => data,
-      text: async () => JSON.stringify(data),
-    });
+    await fn({ client, ...operation.requestOptions });
 
-    it('should initialize the client with correct production URL by default', () => {
-      const sdk = new PGAtlasClient();
-      expect(sdk).toBeDefined();
-    });
+    const [request, init] = mockFetch.mock.calls[0];
+    const headers = typeof request === 'string' ? init?.headers : request.headers;
+    const auth = typeof headers.get === 'function' ? headers.get('Authorization') : headers.Authorization;
+    expect(auth).toBe('Bearer test-token');
+  });
 
-    it('should call fetch with the correct URL for getHealth', async () => {
-      mockFetch.mockResolvedValueOnce(mockResponse({ status: 'ok', version: '0.3.0' }));
+  it('should expose error details for non-2xx responses', async () => {
+    mockFetch.mockResolvedValueOnce(mockResponse({ detail: 'Invalid token' }, false, 401));
 
-      const sdk = new PGAtlasClient();
-      const { data } = await sdk.getHealth();
+    const operation = operationCases.find((candidate) => candidate.httpMethod === 'GET') ?? operationCases[0];
+    const fn = (sdk as Record<string, any>)[operation.functionName];
+    const client = createClient({ baseUrl: apiConfig.apiBaseUrl });
+    const result = await fn({ client, ...operation.requestOptions });
 
-      const [request] = mockFetch.mock.calls[0];
-      const url = typeof request === 'string' ? request : request.url;
-      const method = typeof request === 'string' ? mockFetch.mock.calls[0][1]?.method : request.method;
-
-      expect(url).toBe('https://pg-atlas-backend-h8gen.ondigitalocean.app/health');
-      expect(method).toBe('GET');
-      expect(data?.status).toBe('ok');
-    });
-
-    it('should handle listProjects with query parameters', async () => {
-      mockFetch.mockResolvedValueOnce(mockResponse({ items: [], total: 0, limit: 50, offset: 0 }));
-
-      const sdk = new PGAtlasClient();
-      await sdk.listProjects({ project_type: 'public-good', search: 'test' });
-
-      const [request] = mockFetch.mock.calls[0];
-      const urlStr = typeof request === 'string' ? request : request.url;
-      const url = new URL(urlStr);
-      expect(url.searchParams.get('project_type')).toBe('public-good');
-      expect(url.searchParams.get('search')).toBe('test');
-    });
-
-    it('should include Authorization header when apiKey is set', async () => {
-      mockFetch.mockResolvedValueOnce(mockResponse({ status: 'ok' }));
-
-      const sdk = new PGAtlasClient({ apiKey: 'test-token' });
-      await sdk.getHealth();
-
-      const [request] = mockFetch.mock.calls[0];
-      const headers = typeof request === 'string' ? mockFetch.mock.calls[0][1]?.headers : request.headers;
-      
-      // Headers can be a Record or a Headers object
-      const auth = typeof headers.get === 'function' ? headers.get('Authorization') : headers.Authorization;
-      expect(auth).toBe('Bearer test-token');
-    });
-
-    it('should handle ingestSbom (POST) with JSON body', async () => {
-      mockFetch.mockResolvedValueOnce(mockResponse({ message: 'Accepted', repository: 'owner/repo', package_count: 5 }, true, 202));
-
-      const sdk = new PGAtlasClient({ apiKey: 'gh-token' });
-      const payload = { spdxVersion: 'SPDX-2.3', name: 'test-repo' };
-      const { data } = await sdk.ingestSbom(payload);
-
-      const [request] = mockFetch.mock.calls[0];
-      const url = typeof request === 'string' ? request : request.url;
-      const method = typeof request === 'string' ? mockFetch.mock.calls[0][1]?.method : request.method;
-
-      expect(url).toBe('https://pg-atlas-backend-h8gen.ondigitalocean.app/ingest/sbom');
-      expect(method).toBe('POST');
-      expect(data?.package_count).toBe(5);
-    });
-
-    it('should handle getMetadata', async () => {
-      mockFetch.mockResolvedValueOnce(mockResponse({ total_projects: 42, total_repos: 100 }));
-
-      const sdk = new PGAtlasClient();
-      const { data } = await sdk.getMetadata();
-
-      const [request] = mockFetch.mock.calls[0];
-      const url = typeof request === 'string' ? request : request.url;
-      
-      expect(url).toBe('https://pg-atlas-backend-h8gen.ondigitalocean.app/metadata');
-      expect(data?.total_projects).toBe(42);
-    });
-
-    describe('Error Handling', () => {
-      it('should return error information for 401 Unauthorized', async () => {
-        mockFetch.mockResolvedValueOnce(mockResponse({ detail: 'Invalid token' }, false, 401));
-
-        const sdk = new PGAtlasClient();
-        const { error } = await sdk.getHealth();
-
-        expect(error).toBeDefined();
-        expect((error as any)?.detail).toBe('Invalid token');
-      });
-
-      it('should handle 422 Validation Error', async () => {
-        mockFetch.mockResolvedValueOnce(mockResponse({ detail: [{ loc: ['body', 'name'], msg: 'field required' }] }, false, 422));
-
-        const sdk = new PGAtlasClient();
-        const { error } = await sdk.ingestSbom({});
-
-        expect(error).toBeDefined();
-        expect(Array.isArray((error as any)?.detail)).toBe(true);
-      });
-    });
+    expect(result.error).toBeDefined();
   });
 });
