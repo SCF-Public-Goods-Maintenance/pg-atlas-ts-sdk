@@ -1,5 +1,5 @@
 {
-  "name": "@pg-atlas/sdk",
+  "name": "@pg-atlas/data-sdk",
   "version": "0.4.0",
   "description": "TypeScript SDK for the PG Atlas API",
   "type": "module",

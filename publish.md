@@ -1,4 +1,4 @@
-# Publishing `@pg-atlas/sdk`
+# Publishing `@pg-atlas/data-sdk`
 
 _SDK Maintainers: the API base URL is defined once in `src/api-config.json` and consumed by update/generation tooling._
 
