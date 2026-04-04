@@ -1050,6 +1050,10 @@ export const ProjectDetailResponseSchema = {
             format: 'date-time',
             title: 'Updated At'
         },
+        project_id: {
+            type: 'integer',
+            title: 'Project Id'
+        },
         metadata: {
             $ref: '#/components/schemas/ProjectMetadata'
         }
@@ -1066,6 +1070,7 @@ export const ProjectDetailResponseSchema = {
         'criticality_score',
         'adoption_score',
         'updated_at',
+        'project_id',
         'metadata'
     ],
     title: 'ProjectDetailResponse',

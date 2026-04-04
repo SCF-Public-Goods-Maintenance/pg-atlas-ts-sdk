@@ -2,12 +2,12 @@
     "openapi": "3.1.0",
     "info": {
         "title": "PG Atlas API",
-        "description": "Public, read-only REST API exposing the **PG Atlas** dependency-graph dataset\nfor [Stellar Community Fund](https://communityfund.stellar.org/) public-goods\nprojects.\n\n## What is PG Atlas?\n\nPG Atlas maps the software supply chain of SCF-funded projects — repositories,\ndependencies, contributors, and health metrics — into a queryable graph.  This\nAPI is the primary interface for the\n[PG Atlas Dashboard](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-frontend)\nand the\n[PG Atlas TypeScript SDK](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-sdk).\n\n## Data sources\n\nEvery endpoint is tagged with the upstream source(s) its data originates from\n(`OpenGrants`, `deps.dev`, `GitHub`, or `PG Atlas` for computed metrics).\n\n## Authentication\n\nRead endpoints are **public** — no authentication required.  Write endpoints\nunder `/ingest` require a GitHub Actions OIDC token.\n\n## Versioning\n\nThis API is currently **unversioned** (development phase).  See\n[api-versioning.md](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-backend/blob/main/pg_atlas/routers/api-versioning.md)\nfor the future versioning strategy.\n",
+        "description": "Permissionless REST API exposing the **PG Atlas** graph dataset with top-down\ncoverage of [Stellar Community Fund](https://communityfund.stellar.org/) projects,\nand gradual bottom-up coverage of the Stellar software ecosystem.\n\n## What is PG Atlas?\n\nPG Atlas maps the software supply chain of SCF-funded projects — repositories,\ndependencies, contributors, and health metrics — into a queryable graph.  This\nAPI is the primary interface for the\n[PG Atlas Dashboard](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-frontend)\nand the\n[PG Atlas TypeScript SDK](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-sdk).\n\n## Data sources\n\nEvery endpoint is tagged with the upstream source(s) its data originates from\n(`OpenGrants`, `deps.dev`, `GitHub`, or `PG Atlas` for computed metrics).\n\n## Contributing data\n\nYou can add your own project's data to the Atlas by adopting the\n[SBOM Action](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-sbom-action).\nThis is how we increase the visibility of the Stellar ecosystem, particularly when\nit comes to proprietary (private) codebases and non-SCF funded projects.\n\nIf your project is already visible in the graph, its quality is still limited by\nwhat we can publicly crawl. By adopting the SBOM Action in all your git repositories\nthat build on Stellar, you'll contribute to improving the completeness and the\nquality of the data that PG Atlas exposes.\n\n## Authentication\n\nRead endpoints are **public** — no authentication required.  Write endpoints\nunder `/ingest` require a GitHub Actions OIDC token.\n\n## Versioning\n\nThis API is currently **unversioned** (development phase).  See\n[api-versioning.md](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-backend/blob/main/pg_atlas/routers/api-versioning.md)\nfor the future versioning strategy.",
         "license": {
             "name": "Mozilla Public License v2.0",
             "identifier": "MPL-2.0"
         },
-        "version": "0.3.0"
+        "version": "0.4.0"
     },
     "paths": {
         "/health": {
@@ -17,7 +17,7 @@
                 ],
                 "summary": "Liveness check",
                 "description": "Return the current health status and application version.\n\nThis endpoint is intentionally dependency-free (no DB call) so that it\nremains responsive even when the database is unreachable. A richer check\nwith named component statuses (db, graph) will be added in A2.",
-                "operationId": "health_health_get",
+                "operationId": "health",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -39,7 +39,7 @@
                 ],
                 "summary": "Submit an SPDX 2.3 SBOM",
                 "description": "Accepts an SPDX 2.3 JSON SBOM document from the pg-atlas-sbom-action. Requires a valid GitHub OIDC Bearer token with `aud` set to the PG Atlas API URL. The submitting repository is identified from the token's `repository` claim — no additional configuration is required in the calling repo beyond `permissions: id-token: write`.",
-                "operationId": "ingest_sbom_ingest_sbom_post",
+                "operationId": "ingest_sbom",
                 "parameters": [
                     {
                         "name": "authorization",
@@ -87,7 +87,7 @@
                 ],
                 "summary": "List SBOM submissions",
                 "description": "Returns a paginated list of SBOM submission records.  Supports optional filtering by ``repository`` claim and pagination via ``limit`` / ``offset`` query parameters.  Does not require authentication.",
-                "operationId": "list_sbom_submissions_ingest_sbom_get",
+                "operationId": "list_sbom_submissions",
                 "parameters": [
                     {
                         "name": "repository",
@@ -166,7 +166,7 @@
                 ],
                 "summary": "Get SBOM submission detail",
                 "description": "Returns a single SBOM submission record along with the raw artifact content read from the backing store.  If the artifact file is missing, the ``raw_artifact`` field is ``null``.  Does not require authentication.",
-                "operationId": "get_sbom_submission_ingest_sbom__submission_id__get",
+                "operationId": "get_sbom_submission",
                 "parameters": [
                     {
                         "name": "submission_id",
@@ -213,7 +213,7 @@
                 ],
                 "summary": "Ecosystem summary statistics",
                 "description": "Return aggregate counts across all graph entities.\n\nCounts are computed on-the-fly via simple ``COUNT(*)`` queries.  No\ncaching is applied in this dev version — queries hit the DB directly.",
-                "operationId": "get_metadata_metadata_get",
+                "operationId": "get_metadata",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -237,7 +237,7 @@
                 ],
                 "summary": "List projects",
                 "description": "Paginated list of SCF-funded projects with optional filters.\n\n- **project_type**: filter by `public-good` or `scf-project`.\n- **activity_status**: filter by lifecycle status (`live`, `in-dev`, etc.).\n- **search**: case-insensitive substring match on `display_name`.\n- Results are ordered by `canonical_id` for deterministic pagination.",
-                "operationId": "list_projects_projects_get",
+                "operationId": "list_projects",
                 "parameters": [
                     {
                         "name": "project_type",
@@ -349,7 +349,7 @@
                 ],
                 "summary": "Project detail",
                 "description": "Full detail for a single project, including validated metadata.\n\nThe ``metadata`` field is the normalised form of the raw JSONB column —\nunknown keys from the crawler are passed through via ``extra=\"allow\"``.",
-                "operationId": "get_project_projects__canonical_id__get",
+                "operationId": "get_project",
                 "parameters": [
                     {
                         "name": "canonical_id",
@@ -394,7 +394,7 @@
                 ],
                 "summary": "Repos belonging to a project",
                 "description": "Paginated list of repos that belong to the given project.\n\nReturns 404 if the project does not exist.",
-                "operationId": "get_project_repos_projects__canonical_id__repos_get",
+                "operationId": "get_project_repos",
                 "parameters": [
                     {
                         "name": "canonical_id",
@@ -465,7 +465,7 @@
                 ],
                 "summary": "Project-level dependencies",
                 "description": "Collapsed project-level dependencies.\n\nAggregates repo-level ``depends_on`` edges: for each distinct target project,\nreturns the target project summary and the number of repo-level edges between\nthe two projects.  Self-references and edges to external repos (which have no\nproject) are excluded.",
-                "operationId": "get_project_depends_on_projects__canonical_id__depends_on_get",
+                "operationId": "get_project_depends_on",
                 "parameters": [
                     {
                         "name": "canonical_id",
@@ -487,7 +487,7 @@
                                     "items": {
                                         "$ref": "#/components/schemas/ProjectDependency"
                                     },
-                                    "title": "Response Get Project Depends On Projects  Canonical Id  Depends On Get"
+                                    "title": "Response Get Project Depends On"
                                 }
                             }
                         }
@@ -513,7 +513,7 @@
                 ],
                 "summary": "Projects that depend on this project",
                 "description": "Collapsed project-level reverse dependencies.\n\nSame aggregation as ``depends-on`` but in the reverse direction: which\nother projects have repos that depend on repos of *this* project.",
-                "operationId": "get_project_has_dependents_projects__canonical_id__has_dependents_get",
+                "operationId": "get_project_has_dependents",
                 "parameters": [
                     {
                         "name": "canonical_id",
@@ -535,7 +535,7 @@
                                     "items": {
                                         "$ref": "#/components/schemas/ProjectDependency"
                                     },
-                                    "title": "Response Get Project Has Dependents Projects  Canonical Id  Has Dependents Get"
+                                    "title": "Response Get Project Has Dependents"
                                 }
                             }
                         }
@@ -562,7 +562,7 @@
                 ],
                 "summary": "List repos",
                 "description": "Paginated list of in-ecosystem repos with optional filters.\n\n- **project_id**: filter to repos belonging to a specific project.\n- **search**: case-insensitive substring match on `display_name`.\n- Results are ordered by `canonical_id` for deterministic pagination.",
-                "operationId": "list_repos_repos_get",
+                "operationId": "list_repos",
                 "parameters": [
                     {
                         "name": "project_id",
@@ -658,7 +658,7 @@
                 ],
                 "summary": "Direct dependencies of a repo",
                 "description": "List of direct dependencies (outgoing edges) for a given repo.\n\nEach entry includes the target vertex's canonical ID, display name,\ntype (``repo`` or ``external-repo``), version range, and confidence level.",
-                "operationId": "get_repo_depends_on_repos__canonical_id__depends_on_get",
+                "operationId": "get_repo_depends_on",
                 "parameters": [
                     {
                         "name": "canonical_id",
@@ -680,7 +680,7 @@
                                     "items": {
                                         "$ref": "#/components/schemas/RepoDependency"
                                     },
-                                    "title": "Response Get Repo Depends On Repos  Canonical Id  Depends On Get"
+                                    "title": "Response Get Repo Depends On"
                                 }
                             }
                         }
@@ -707,7 +707,7 @@
                 ],
                 "summary": "Repos that depend on this repo",
                 "description": "List of direct dependents (incoming edges) for a given repo.\n\nEach entry includes the source vertex's canonical ID, display name,\ntype, version range, and confidence level.",
-                "operationId": "get_repo_has_dependents_repos__canonical_id__has_dependents_get",
+                "operationId": "get_repo_has_dependents",
                 "parameters": [
                     {
                         "name": "canonical_id",
@@ -729,7 +729,7 @@
                                     "items": {
                                         "$ref": "#/components/schemas/RepoDependency"
                                     },
-                                    "title": "Response Get Repo Has Dependents Repos  Canonical Id  Has Dependents Get"
+                                    "title": "Response Get Repo Has Dependents"
                                 }
                             }
                         }
@@ -757,7 +757,7 @@
                 ],
                 "summary": "Repo detail",
                 "description": "Full detail for a single repo including parent project, contributors,\nreleases, and dependency counts.",
-                "operationId": "get_repo_repos__canonical_id__get",
+                "operationId": "get_repo",
                 "parameters": [
                     {
                         "name": "canonical_id",
@@ -802,7 +802,7 @@
                 ],
                 "summary": "Contributor detail",
                 "description": "Full detail for a single contributor with aggregated statistics and\nper-repo commit activity.\n\nThe ``total_commits`` field sums commits across all repos.\n``first_contribution`` / ``last_contribution`` are the earliest and latest\ncommit dates across all repos.",
-                "operationId": "get_contributor_contributors__contributor_id__get",
+                "operationId": "get_contributor",
                 "parameters": [
                     {
                         "name": "contributor_id",
@@ -1260,6 +1260,10 @@
                         "format": "date-time",
                         "title": "Updated At"
                     },
+                    "project_id": {
+                        "type": "integer",
+                        "title": "Project Id"
+                    },
                     "metadata": {
                         "$ref": "#/components/schemas/ProjectMetadata"
                     }
@@ -1276,6 +1280,7 @@
                     "criticality_score",
                     "adoption_score",
                     "updated_at",
+                    "project_id",
                     "metadata"
                 ],
                 "title": "ProjectDetailResponse",

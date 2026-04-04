@@ -534,9 +534,7 @@ export type ProjectMetadata = {
      * Regions Of Operation
      */
     regions_of_operation?: unknown | null;
-    [key: string]: unknown | Array<ScfSubmission> | string | null | string | null | string | null | string | null | string | null | number | number | null | number | number | null | number | null | boolean | null | Array<{
-        [key: string]: unknown;
-    }> | null | unknown | null | unknown | null | undefined;
+    [key: string]: unknown;
 };
 
 /**
@@ -581,6 +579,10 @@ export type ProjectDetailResponse = {
      * Updated At
      */
     updated_at: string;
+    /**
+     * Project Id
+     */
+    project_id: number;
     metadata: ProjectMetadata;
 };
 
@@ -776,23 +778,23 @@ export type ContributionEntry = {
     last_commit_date: string;
 };
 
-export type HealthHealthGetData = {
+export type HealthData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/health';
 };
 
-export type HealthHealthGetResponses = {
+export type HealthResponses = {
     /**
      * Successful Response
      */
     200: HealthResponse;
 };
 
-export type HealthHealthGetResponse = HealthHealthGetResponses[keyof HealthHealthGetResponses];
+export type HealthResponse2 = HealthResponses[keyof HealthResponses];
 
-export type ListSbomSubmissionsIngestSbomGetData = {
+export type ListSbomSubmissionsData = {
     body?: never;
     path?: never;
     query?: {
@@ -818,25 +820,25 @@ export type ListSbomSubmissionsIngestSbomGetData = {
     url: '/ingest/sbom';
 };
 
-export type ListSbomSubmissionsIngestSbomGetErrors = {
+export type ListSbomSubmissionsErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ListSbomSubmissionsIngestSbomGetError = ListSbomSubmissionsIngestSbomGetErrors[keyof ListSbomSubmissionsIngestSbomGetErrors];
+export type ListSbomSubmissionsError = ListSbomSubmissionsErrors[keyof ListSbomSubmissionsErrors];
 
-export type ListSbomSubmissionsIngestSbomGetResponses = {
+export type ListSbomSubmissionsResponses = {
     /**
      * Successful Response
      */
     200: SbomSubmissionListResponse;
 };
 
-export type ListSbomSubmissionsIngestSbomGetResponse = ListSbomSubmissionsIngestSbomGetResponses[keyof ListSbomSubmissionsIngestSbomGetResponses];
+export type ListSbomSubmissionsResponse = ListSbomSubmissionsResponses[keyof ListSbomSubmissionsResponses];
 
-export type IngestSbomIngestSbomPostData = {
+export type IngestSbomData = {
     body?: never;
     headers?: {
         /**
@@ -849,25 +851,25 @@ export type IngestSbomIngestSbomPostData = {
     url: '/ingest/sbom';
 };
 
-export type IngestSbomIngestSbomPostErrors = {
+export type IngestSbomErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type IngestSbomIngestSbomPostError = IngestSbomIngestSbomPostErrors[keyof IngestSbomIngestSbomPostErrors];
+export type IngestSbomError = IngestSbomErrors[keyof IngestSbomErrors];
 
-export type IngestSbomIngestSbomPostResponses = {
+export type IngestSbomResponses = {
     /**
      * Successful Response
      */
     202: SbomAcceptedResponse;
 };
 
-export type IngestSbomIngestSbomPostResponse = IngestSbomIngestSbomPostResponses[keyof IngestSbomIngestSbomPostResponses];
+export type IngestSbomResponse = IngestSbomResponses[keyof IngestSbomResponses];
 
-export type GetSbomSubmissionIngestSbomSubmissionIdGetData = {
+export type GetSbomSubmissionData = {
     body?: never;
     path: {
         /**
@@ -879,41 +881,41 @@ export type GetSbomSubmissionIngestSbomSubmissionIdGetData = {
     url: '/ingest/sbom/{submission_id}';
 };
 
-export type GetSbomSubmissionIngestSbomSubmissionIdGetErrors = {
+export type GetSbomSubmissionErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetSbomSubmissionIngestSbomSubmissionIdGetError = GetSbomSubmissionIngestSbomSubmissionIdGetErrors[keyof GetSbomSubmissionIngestSbomSubmissionIdGetErrors];
+export type GetSbomSubmissionError = GetSbomSubmissionErrors[keyof GetSbomSubmissionErrors];
 
-export type GetSbomSubmissionIngestSbomSubmissionIdGetResponses = {
+export type GetSbomSubmissionResponses = {
     /**
      * Successful Response
      */
     200: SbomSubmissionDetailResponse;
 };
 
-export type GetSbomSubmissionIngestSbomSubmissionIdGetResponse = GetSbomSubmissionIngestSbomSubmissionIdGetResponses[keyof GetSbomSubmissionIngestSbomSubmissionIdGetResponses];
+export type GetSbomSubmissionResponse = GetSbomSubmissionResponses[keyof GetSbomSubmissionResponses];
 
-export type GetMetadataMetadataGetData = {
+export type GetMetadataData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/metadata';
 };
 
-export type GetMetadataMetadataGetResponses = {
+export type GetMetadataResponses = {
     /**
      * Successful Response
      */
     200: MetadataResponse;
 };
 
-export type GetMetadataMetadataGetResponse = GetMetadataMetadataGetResponses[keyof GetMetadataMetadataGetResponses];
+export type GetMetadataResponse = GetMetadataResponses[keyof GetMetadataResponses];
 
-export type ListProjectsProjectsGetData = {
+export type ListProjectsData = {
     body?: never;
     path?: never;
     query?: {
@@ -945,25 +947,25 @@ export type ListProjectsProjectsGetData = {
     url: '/projects';
 };
 
-export type ListProjectsProjectsGetErrors = {
+export type ListProjectsErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ListProjectsProjectsGetError = ListProjectsProjectsGetErrors[keyof ListProjectsProjectsGetErrors];
+export type ListProjectsError = ListProjectsErrors[keyof ListProjectsErrors];
 
-export type ListProjectsProjectsGetResponses = {
+export type ListProjectsResponses = {
     /**
      * Successful Response
      */
     200: PaginatedResponseProjectSummary;
 };
 
-export type ListProjectsProjectsGetResponse = ListProjectsProjectsGetResponses[keyof ListProjectsProjectsGetResponses];
+export type ListProjectsResponse = ListProjectsResponses[keyof ListProjectsResponses];
 
-export type GetProjectProjectsCanonicalIdGetData = {
+export type GetProjectData = {
     body?: never;
     path: {
         /**
@@ -975,25 +977,25 @@ export type GetProjectProjectsCanonicalIdGetData = {
     url: '/projects/{canonical_id}';
 };
 
-export type GetProjectProjectsCanonicalIdGetErrors = {
+export type GetProjectErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetProjectProjectsCanonicalIdGetError = GetProjectProjectsCanonicalIdGetErrors[keyof GetProjectProjectsCanonicalIdGetErrors];
+export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
 
-export type GetProjectProjectsCanonicalIdGetResponses = {
+export type GetProjectResponses = {
     /**
      * Successful Response
      */
     200: ProjectDetailResponse;
 };
 
-export type GetProjectProjectsCanonicalIdGetResponse = GetProjectProjectsCanonicalIdGetResponses[keyof GetProjectProjectsCanonicalIdGetResponses];
+export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
 
-export type GetProjectReposProjectsCanonicalIdReposGetData = {
+export type GetProjectReposData = {
     body?: never;
     path: {
         /**
@@ -1018,25 +1020,25 @@ export type GetProjectReposProjectsCanonicalIdReposGetData = {
     url: '/projects/{canonical_id}/repos';
 };
 
-export type GetProjectReposProjectsCanonicalIdReposGetErrors = {
+export type GetProjectReposErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetProjectReposProjectsCanonicalIdReposGetError = GetProjectReposProjectsCanonicalIdReposGetErrors[keyof GetProjectReposProjectsCanonicalIdReposGetErrors];
+export type GetProjectReposError = GetProjectReposErrors[keyof GetProjectReposErrors];
 
-export type GetProjectReposProjectsCanonicalIdReposGetResponses = {
+export type GetProjectReposResponses = {
     /**
      * Successful Response
      */
     200: PaginatedResponseRepoSummary;
 };
 
-export type GetProjectReposProjectsCanonicalIdReposGetResponse = GetProjectReposProjectsCanonicalIdReposGetResponses[keyof GetProjectReposProjectsCanonicalIdReposGetResponses];
+export type GetProjectReposResponse = GetProjectReposResponses[keyof GetProjectReposResponses];
 
-export type GetProjectDependsOnProjectsCanonicalIdDependsOnGetData = {
+export type GetProjectDependsOnData = {
     body?: never;
     path: {
         /**
@@ -1048,27 +1050,27 @@ export type GetProjectDependsOnProjectsCanonicalIdDependsOnGetData = {
     url: '/projects/{canonical_id}/depends-on';
 };
 
-export type GetProjectDependsOnProjectsCanonicalIdDependsOnGetErrors = {
+export type GetProjectDependsOnErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetProjectDependsOnProjectsCanonicalIdDependsOnGetError = GetProjectDependsOnProjectsCanonicalIdDependsOnGetErrors[keyof GetProjectDependsOnProjectsCanonicalIdDependsOnGetErrors];
+export type GetProjectDependsOnError = GetProjectDependsOnErrors[keyof GetProjectDependsOnErrors];
 
-export type GetProjectDependsOnProjectsCanonicalIdDependsOnGetResponses = {
+export type GetProjectDependsOnResponses = {
     /**
-     * Response Get Project Depends On Projects  Canonical Id  Depends On Get
+     * Response Get Project Depends On
      *
      * Successful Response
      */
     200: Array<ProjectDependency>;
 };
 
-export type GetProjectDependsOnProjectsCanonicalIdDependsOnGetResponse = GetProjectDependsOnProjectsCanonicalIdDependsOnGetResponses[keyof GetProjectDependsOnProjectsCanonicalIdDependsOnGetResponses];
+export type GetProjectDependsOnResponse = GetProjectDependsOnResponses[keyof GetProjectDependsOnResponses];
 
-export type GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetData = {
+export type GetProjectHasDependentsData = {
     body?: never;
     path: {
         /**
@@ -1080,27 +1082,27 @@ export type GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetData = {
     url: '/projects/{canonical_id}/has-dependents';
 };
 
-export type GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetErrors = {
+export type GetProjectHasDependentsErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetError = GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetErrors[keyof GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetErrors];
+export type GetProjectHasDependentsError = GetProjectHasDependentsErrors[keyof GetProjectHasDependentsErrors];
 
-export type GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetResponses = {
+export type GetProjectHasDependentsResponses = {
     /**
-     * Response Get Project Has Dependents Projects  Canonical Id  Has Dependents Get
+     * Response Get Project Has Dependents
      *
      * Successful Response
      */
     200: Array<ProjectDependency>;
 };
 
-export type GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetResponse = GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetResponses[keyof GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetResponses];
+export type GetProjectHasDependentsResponse = GetProjectHasDependentsResponses[keyof GetProjectHasDependentsResponses];
 
-export type ListReposReposGetData = {
+export type ListReposData = {
     body?: never;
     path?: never;
     query?: {
@@ -1128,25 +1130,25 @@ export type ListReposReposGetData = {
     url: '/repos';
 };
 
-export type ListReposReposGetErrors = {
+export type ListReposErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ListReposReposGetError = ListReposReposGetErrors[keyof ListReposReposGetErrors];
+export type ListReposError = ListReposErrors[keyof ListReposErrors];
 
-export type ListReposReposGetResponses = {
+export type ListReposResponses = {
     /**
      * Successful Response
      */
     200: PaginatedResponseRepoSummary;
 };
 
-export type ListReposReposGetResponse = ListReposReposGetResponses[keyof ListReposReposGetResponses];
+export type ListReposResponse = ListReposResponses[keyof ListReposResponses];
 
-export type GetRepoDependsOnReposCanonicalIdDependsOnGetData = {
+export type GetRepoDependsOnData = {
     body?: never;
     path: {
         /**
@@ -1158,27 +1160,27 @@ export type GetRepoDependsOnReposCanonicalIdDependsOnGetData = {
     url: '/repos/{canonical_id}/depends-on';
 };
 
-export type GetRepoDependsOnReposCanonicalIdDependsOnGetErrors = {
+export type GetRepoDependsOnErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetRepoDependsOnReposCanonicalIdDependsOnGetError = GetRepoDependsOnReposCanonicalIdDependsOnGetErrors[keyof GetRepoDependsOnReposCanonicalIdDependsOnGetErrors];
+export type GetRepoDependsOnError = GetRepoDependsOnErrors[keyof GetRepoDependsOnErrors];
 
-export type GetRepoDependsOnReposCanonicalIdDependsOnGetResponses = {
+export type GetRepoDependsOnResponses = {
     /**
-     * Response Get Repo Depends On Repos  Canonical Id  Depends On Get
+     * Response Get Repo Depends On
      *
      * Successful Response
      */
     200: Array<RepoDependency>;
 };
 
-export type GetRepoDependsOnReposCanonicalIdDependsOnGetResponse = GetRepoDependsOnReposCanonicalIdDependsOnGetResponses[keyof GetRepoDependsOnReposCanonicalIdDependsOnGetResponses];
+export type GetRepoDependsOnResponse = GetRepoDependsOnResponses[keyof GetRepoDependsOnResponses];
 
-export type GetRepoHasDependentsReposCanonicalIdHasDependentsGetData = {
+export type GetRepoHasDependentsData = {
     body?: never;
     path: {
         /**
@@ -1190,27 +1192,27 @@ export type GetRepoHasDependentsReposCanonicalIdHasDependentsGetData = {
     url: '/repos/{canonical_id}/has-dependents';
 };
 
-export type GetRepoHasDependentsReposCanonicalIdHasDependentsGetErrors = {
+export type GetRepoHasDependentsErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetRepoHasDependentsReposCanonicalIdHasDependentsGetError = GetRepoHasDependentsReposCanonicalIdHasDependentsGetErrors[keyof GetRepoHasDependentsReposCanonicalIdHasDependentsGetErrors];
+export type GetRepoHasDependentsError = GetRepoHasDependentsErrors[keyof GetRepoHasDependentsErrors];
 
-export type GetRepoHasDependentsReposCanonicalIdHasDependentsGetResponses = {
+export type GetRepoHasDependentsResponses = {
     /**
-     * Response Get Repo Has Dependents Repos  Canonical Id  Has Dependents Get
+     * Response Get Repo Has Dependents
      *
      * Successful Response
      */
     200: Array<RepoDependency>;
 };
 
-export type GetRepoHasDependentsReposCanonicalIdHasDependentsGetResponse = GetRepoHasDependentsReposCanonicalIdHasDependentsGetResponses[keyof GetRepoHasDependentsReposCanonicalIdHasDependentsGetResponses];
+export type GetRepoHasDependentsResponse = GetRepoHasDependentsResponses[keyof GetRepoHasDependentsResponses];
 
-export type GetRepoReposCanonicalIdGetData = {
+export type GetRepoData = {
     body?: never;
     path: {
         /**
@@ -1222,25 +1224,25 @@ export type GetRepoReposCanonicalIdGetData = {
     url: '/repos/{canonical_id}';
 };
 
-export type GetRepoReposCanonicalIdGetErrors = {
+export type GetRepoErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetRepoReposCanonicalIdGetError = GetRepoReposCanonicalIdGetErrors[keyof GetRepoReposCanonicalIdGetErrors];
+export type GetRepoError = GetRepoErrors[keyof GetRepoErrors];
 
-export type GetRepoReposCanonicalIdGetResponses = {
+export type GetRepoResponses = {
     /**
      * Successful Response
      */
     200: RepoDetailResponse;
 };
 
-export type GetRepoReposCanonicalIdGetResponse = GetRepoReposCanonicalIdGetResponses[keyof GetRepoReposCanonicalIdGetResponses];
+export type GetRepoResponse = GetRepoResponses[keyof GetRepoResponses];
 
-export type GetContributorContributorsContributorIdGetData = {
+export type GetContributorData = {
     body?: never;
     path: {
         /**
@@ -1252,20 +1254,20 @@ export type GetContributorContributorsContributorIdGetData = {
     url: '/contributors/{contributor_id}';
 };
 
-export type GetContributorContributorsContributorIdGetErrors = {
+export type GetContributorErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetContributorContributorsContributorIdGetError = GetContributorContributorsContributorIdGetErrors[keyof GetContributorContributorsContributorIdGetErrors];
+export type GetContributorError = GetContributorErrors[keyof GetContributorErrors];
 
-export type GetContributorContributorsContributorIdGetResponses = {
+export type GetContributorResponses = {
     /**
      * Successful Response
      */
     200: ContributorDetailResponse;
 };
 
-export type GetContributorContributorsContributorIdGetResponse = GetContributorContributorsContributorIdGetResponses[keyof GetContributorContributorsContributorIdGetResponses];
+export type GetContributorResponse = GetContributorResponses[keyof GetContributorResponses];

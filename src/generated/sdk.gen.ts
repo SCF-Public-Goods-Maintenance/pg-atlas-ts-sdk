@@ -2,9 +2,9 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetContributorContributorsContributorIdGetData, GetContributorContributorsContributorIdGetErrors, GetContributorContributorsContributorIdGetResponses, GetMetadataMetadataGetData, GetMetadataMetadataGetResponses, GetProjectDependsOnProjectsCanonicalIdDependsOnGetData, GetProjectDependsOnProjectsCanonicalIdDependsOnGetErrors, GetProjectDependsOnProjectsCanonicalIdDependsOnGetResponses, GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetData, GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetErrors, GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetResponses, GetProjectProjectsCanonicalIdGetData, GetProjectProjectsCanonicalIdGetErrors, GetProjectProjectsCanonicalIdGetResponses, GetProjectReposProjectsCanonicalIdReposGetData, GetProjectReposProjectsCanonicalIdReposGetErrors, GetProjectReposProjectsCanonicalIdReposGetResponses, GetRepoDependsOnReposCanonicalIdDependsOnGetData, GetRepoDependsOnReposCanonicalIdDependsOnGetErrors, GetRepoDependsOnReposCanonicalIdDependsOnGetResponses, GetRepoHasDependentsReposCanonicalIdHasDependentsGetData, GetRepoHasDependentsReposCanonicalIdHasDependentsGetErrors, GetRepoHasDependentsReposCanonicalIdHasDependentsGetResponses, GetRepoReposCanonicalIdGetData, GetRepoReposCanonicalIdGetErrors, GetRepoReposCanonicalIdGetResponses, GetSbomSubmissionIngestSbomSubmissionIdGetData, GetSbomSubmissionIngestSbomSubmissionIdGetErrors, GetSbomSubmissionIngestSbomSubmissionIdGetResponses, HealthHealthGetData, HealthHealthGetResponses, IngestSbomIngestSbomPostData, IngestSbomIngestSbomPostErrors, IngestSbomIngestSbomPostResponses, ListProjectsProjectsGetData, ListProjectsProjectsGetErrors, ListProjectsProjectsGetResponses, ListReposReposGetData, ListReposReposGetErrors, ListReposReposGetResponses, ListSbomSubmissionsIngestSbomGetData, ListSbomSubmissionsIngestSbomGetErrors, ListSbomSubmissionsIngestSbomGetResponses } from './types.gen';
+import type { GetContributorData, GetContributorErrors, GetContributorResponses, GetMetadataData, GetMetadataResponses, GetProjectData, GetProjectDependsOnData, GetProjectDependsOnErrors, GetProjectDependsOnResponses, GetProjectErrors, GetProjectHasDependentsData, GetProjectHasDependentsErrors, GetProjectHasDependentsResponses, GetProjectReposData, GetProjectReposErrors, GetProjectReposResponses, GetProjectResponses, GetRepoData, GetRepoDependsOnData, GetRepoDependsOnErrors, GetRepoDependsOnResponses, GetRepoErrors, GetRepoHasDependentsData, GetRepoHasDependentsErrors, GetRepoHasDependentsResponses, GetRepoResponses, GetSbomSubmissionData, GetSbomSubmissionErrors, GetSbomSubmissionResponses, HealthData, HealthResponses, IngestSbomData, IngestSbomErrors, IngestSbomResponses, ListProjectsData, ListProjectsErrors, ListProjectsResponses, ListReposData, ListReposErrors, ListReposResponses, ListSbomSubmissionsData, ListSbomSubmissionsErrors, ListSbomSubmissionsResponses } from './types.gen';
 
-export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
+export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
      * You can provide a client instance returned by `createClient()` instead of
      * individual options. This might be also useful if you want to implement a
@@ -27,28 +27,28 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * remains responsive even when the database is unreachable. A richer check
  * with named component statuses (db, graph) will be added in A2.
  */
-export const healthHealthGet = <ThrowOnError extends boolean = false>(options?: Options<HealthHealthGetData, ThrowOnError>) => (options?.client ?? client).get<HealthHealthGetResponses, unknown, ThrowOnError>({ url: '/health', ...options });
+export const health = <ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>) => (options?.client ?? client).get<HealthResponses, unknown, ThrowOnError>({ url: '/health', ...options });
 
 /**
  * List SBOM submissions
  *
  * Returns a paginated list of SBOM submission records.  Supports optional filtering by ``repository`` claim and pagination via ``limit`` / ``offset`` query parameters.  Does not require authentication.
  */
-export const listSbomSubmissionsIngestSbomGet = <ThrowOnError extends boolean = false>(options?: Options<ListSbomSubmissionsIngestSbomGetData, ThrowOnError>) => (options?.client ?? client).get<ListSbomSubmissionsIngestSbomGetResponses, ListSbomSubmissionsIngestSbomGetErrors, ThrowOnError>({ url: '/ingest/sbom', ...options });
+export const listSbomSubmissions = <ThrowOnError extends boolean = false>(options?: Options<ListSbomSubmissionsData, ThrowOnError>) => (options?.client ?? client).get<ListSbomSubmissionsResponses, ListSbomSubmissionsErrors, ThrowOnError>({ url: '/ingest/sbom', ...options });
 
 /**
  * Submit an SPDX 2.3 SBOM
  *
  * Accepts an SPDX 2.3 JSON SBOM document from the pg-atlas-sbom-action. Requires a valid GitHub OIDC Bearer token with `aud` set to the PG Atlas API URL. The submitting repository is identified from the token's `repository` claim — no additional configuration is required in the calling repo beyond `permissions: id-token: write`.
  */
-export const ingestSbomIngestSbomPost = <ThrowOnError extends boolean = false>(options?: Options<IngestSbomIngestSbomPostData, ThrowOnError>) => (options?.client ?? client).post<IngestSbomIngestSbomPostResponses, IngestSbomIngestSbomPostErrors, ThrowOnError>({ url: '/ingest/sbom', ...options });
+export const ingestSbom = <ThrowOnError extends boolean = false>(options?: Options<IngestSbomData, ThrowOnError>) => (options?.client ?? client).post<IngestSbomResponses, IngestSbomErrors, ThrowOnError>({ url: '/ingest/sbom', ...options });
 
 /**
  * Get SBOM submission detail
  *
  * Returns a single SBOM submission record along with the raw artifact content read from the backing store.  If the artifact file is missing, the ``raw_artifact`` field is ``null``.  Does not require authentication.
  */
-export const getSbomSubmissionIngestSbomSubmissionIdGet = <ThrowOnError extends boolean = false>(options: Options<GetSbomSubmissionIngestSbomSubmissionIdGetData, ThrowOnError>) => (options.client ?? client).get<GetSbomSubmissionIngestSbomSubmissionIdGetResponses, GetSbomSubmissionIngestSbomSubmissionIdGetErrors, ThrowOnError>({ url: '/ingest/sbom/{submission_id}', ...options });
+export const getSbomSubmission = <ThrowOnError extends boolean = false>(options: Options<GetSbomSubmissionData, ThrowOnError>) => (options.client ?? client).get<GetSbomSubmissionResponses, GetSbomSubmissionErrors, ThrowOnError>({ url: '/ingest/sbom/{submission_id}', ...options });
 
 /**
  * Ecosystem summary statistics
@@ -58,7 +58,7 @@ export const getSbomSubmissionIngestSbomSubmissionIdGet = <ThrowOnError extends 
  * Counts are computed on-the-fly via simple ``COUNT(*)`` queries.  No
  * caching is applied in this dev version — queries hit the DB directly.
  */
-export const getMetadataMetadataGet = <ThrowOnError extends boolean = false>(options?: Options<GetMetadataMetadataGetData, ThrowOnError>) => (options?.client ?? client).get<GetMetadataMetadataGetResponses, unknown, ThrowOnError>({ url: '/metadata', ...options });
+export const getMetadata = <ThrowOnError extends boolean = false>(options?: Options<GetMetadataData, ThrowOnError>) => (options?.client ?? client).get<GetMetadataResponses, unknown, ThrowOnError>({ url: '/metadata', ...options });
 
 /**
  * List projects
@@ -70,7 +70,7 @@ export const getMetadataMetadataGet = <ThrowOnError extends boolean = false>(opt
  * - **search**: case-insensitive substring match on `display_name`.
  * - Results are ordered by `canonical_id` for deterministic pagination.
  */
-export const listProjectsProjectsGet = <ThrowOnError extends boolean = false>(options?: Options<ListProjectsProjectsGetData, ThrowOnError>) => (options?.client ?? client).get<ListProjectsProjectsGetResponses, ListProjectsProjectsGetErrors, ThrowOnError>({ url: '/projects', ...options });
+export const listProjects = <ThrowOnError extends boolean = false>(options?: Options<ListProjectsData, ThrowOnError>) => (options?.client ?? client).get<ListProjectsResponses, ListProjectsErrors, ThrowOnError>({ url: '/projects', ...options });
 
 /**
  * Project detail
@@ -80,7 +80,7 @@ export const listProjectsProjectsGet = <ThrowOnError extends boolean = false>(op
  * The ``metadata`` field is the normalised form of the raw JSONB column —
  * unknown keys from the crawler are passed through via ``extra="allow"``.
  */
-export const getProjectProjectsCanonicalIdGet = <ThrowOnError extends boolean = false>(options: Options<GetProjectProjectsCanonicalIdGetData, ThrowOnError>) => (options.client ?? client).get<GetProjectProjectsCanonicalIdGetResponses, GetProjectProjectsCanonicalIdGetErrors, ThrowOnError>({ url: '/projects/{canonical_id}', ...options });
+export const getProject = <ThrowOnError extends boolean = false>(options: Options<GetProjectData, ThrowOnError>) => (options.client ?? client).get<GetProjectResponses, GetProjectErrors, ThrowOnError>({ url: '/projects/{canonical_id}', ...options });
 
 /**
  * Repos belonging to a project
@@ -89,7 +89,7 @@ export const getProjectProjectsCanonicalIdGet = <ThrowOnError extends boolean = 
  *
  * Returns 404 if the project does not exist.
  */
-export const getProjectReposProjectsCanonicalIdReposGet = <ThrowOnError extends boolean = false>(options: Options<GetProjectReposProjectsCanonicalIdReposGetData, ThrowOnError>) => (options.client ?? client).get<GetProjectReposProjectsCanonicalIdReposGetResponses, GetProjectReposProjectsCanonicalIdReposGetErrors, ThrowOnError>({ url: '/projects/{canonical_id}/repos', ...options });
+export const getProjectRepos = <ThrowOnError extends boolean = false>(options: Options<GetProjectReposData, ThrowOnError>) => (options.client ?? client).get<GetProjectReposResponses, GetProjectReposErrors, ThrowOnError>({ url: '/projects/{canonical_id}/repos', ...options });
 
 /**
  * Project-level dependencies
@@ -101,7 +101,7 @@ export const getProjectReposProjectsCanonicalIdReposGet = <ThrowOnError extends 
  * the two projects.  Self-references and edges to external repos (which have no
  * project) are excluded.
  */
-export const getProjectDependsOnProjectsCanonicalIdDependsOnGet = <ThrowOnError extends boolean = false>(options: Options<GetProjectDependsOnProjectsCanonicalIdDependsOnGetData, ThrowOnError>) => (options.client ?? client).get<GetProjectDependsOnProjectsCanonicalIdDependsOnGetResponses, GetProjectDependsOnProjectsCanonicalIdDependsOnGetErrors, ThrowOnError>({ url: '/projects/{canonical_id}/depends-on', ...options });
+export const getProjectDependsOn = <ThrowOnError extends boolean = false>(options: Options<GetProjectDependsOnData, ThrowOnError>) => (options.client ?? client).get<GetProjectDependsOnResponses, GetProjectDependsOnErrors, ThrowOnError>({ url: '/projects/{canonical_id}/depends-on', ...options });
 
 /**
  * Projects that depend on this project
@@ -111,7 +111,7 @@ export const getProjectDependsOnProjectsCanonicalIdDependsOnGet = <ThrowOnError 
  * Same aggregation as ``depends-on`` but in the reverse direction: which
  * other projects have repos that depend on repos of *this* project.
  */
-export const getProjectHasDependentsProjectsCanonicalIdHasDependentsGet = <ThrowOnError extends boolean = false>(options: Options<GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetData, ThrowOnError>) => (options.client ?? client).get<GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetResponses, GetProjectHasDependentsProjectsCanonicalIdHasDependentsGetErrors, ThrowOnError>({ url: '/projects/{canonical_id}/has-dependents', ...options });
+export const getProjectHasDependents = <ThrowOnError extends boolean = false>(options: Options<GetProjectHasDependentsData, ThrowOnError>) => (options.client ?? client).get<GetProjectHasDependentsResponses, GetProjectHasDependentsErrors, ThrowOnError>({ url: '/projects/{canonical_id}/has-dependents', ...options });
 
 /**
  * List repos
@@ -122,7 +122,7 @@ export const getProjectHasDependentsProjectsCanonicalIdHasDependentsGet = <Throw
  * - **search**: case-insensitive substring match on `display_name`.
  * - Results are ordered by `canonical_id` for deterministic pagination.
  */
-export const listReposReposGet = <ThrowOnError extends boolean = false>(options?: Options<ListReposReposGetData, ThrowOnError>) => (options?.client ?? client).get<ListReposReposGetResponses, ListReposReposGetErrors, ThrowOnError>({ url: '/repos', ...options });
+export const listRepos = <ThrowOnError extends boolean = false>(options?: Options<ListReposData, ThrowOnError>) => (options?.client ?? client).get<ListReposResponses, ListReposErrors, ThrowOnError>({ url: '/repos', ...options });
 
 /**
  * Direct dependencies of a repo
@@ -132,7 +132,7 @@ export const listReposReposGet = <ThrowOnError extends boolean = false>(options?
  * Each entry includes the target vertex's canonical ID, display name,
  * type (``repo`` or ``external-repo``), version range, and confidence level.
  */
-export const getRepoDependsOnReposCanonicalIdDependsOnGet = <ThrowOnError extends boolean = false>(options: Options<GetRepoDependsOnReposCanonicalIdDependsOnGetData, ThrowOnError>) => (options.client ?? client).get<GetRepoDependsOnReposCanonicalIdDependsOnGetResponses, GetRepoDependsOnReposCanonicalIdDependsOnGetErrors, ThrowOnError>({ url: '/repos/{canonical_id}/depends-on', ...options });
+export const getRepoDependsOn = <ThrowOnError extends boolean = false>(options: Options<GetRepoDependsOnData, ThrowOnError>) => (options.client ?? client).get<GetRepoDependsOnResponses, GetRepoDependsOnErrors, ThrowOnError>({ url: '/repos/{canonical_id}/depends-on', ...options });
 
 /**
  * Repos that depend on this repo
@@ -142,7 +142,7 @@ export const getRepoDependsOnReposCanonicalIdDependsOnGet = <ThrowOnError extend
  * Each entry includes the source vertex's canonical ID, display name,
  * type, version range, and confidence level.
  */
-export const getRepoHasDependentsReposCanonicalIdHasDependentsGet = <ThrowOnError extends boolean = false>(options: Options<GetRepoHasDependentsReposCanonicalIdHasDependentsGetData, ThrowOnError>) => (options.client ?? client).get<GetRepoHasDependentsReposCanonicalIdHasDependentsGetResponses, GetRepoHasDependentsReposCanonicalIdHasDependentsGetErrors, ThrowOnError>({ url: '/repos/{canonical_id}/has-dependents', ...options });
+export const getRepoHasDependents = <ThrowOnError extends boolean = false>(options: Options<GetRepoHasDependentsData, ThrowOnError>) => (options.client ?? client).get<GetRepoHasDependentsResponses, GetRepoHasDependentsErrors, ThrowOnError>({ url: '/repos/{canonical_id}/has-dependents', ...options });
 
 /**
  * Repo detail
@@ -150,7 +150,7 @@ export const getRepoHasDependentsReposCanonicalIdHasDependentsGet = <ThrowOnErro
  * Full detail for a single repo including parent project, contributors,
  * releases, and dependency counts.
  */
-export const getRepoReposCanonicalIdGet = <ThrowOnError extends boolean = false>(options: Options<GetRepoReposCanonicalIdGetData, ThrowOnError>) => (options.client ?? client).get<GetRepoReposCanonicalIdGetResponses, GetRepoReposCanonicalIdGetErrors, ThrowOnError>({ url: '/repos/{canonical_id}', ...options });
+export const getRepo = <ThrowOnError extends boolean = false>(options: Options<GetRepoData, ThrowOnError>) => (options.client ?? client).get<GetRepoResponses, GetRepoErrors, ThrowOnError>({ url: '/repos/{canonical_id}', ...options });
 
 /**
  * Contributor detail
@@ -162,4 +162,4 @@ export const getRepoReposCanonicalIdGet = <ThrowOnError extends boolean = false>
  * ``first_contribution`` / ``last_contribution`` are the earliest and latest
  * commit dates across all repos.
  */
-export const getContributorContributorsContributorIdGet = <ThrowOnError extends boolean = false>(options: Options<GetContributorContributorsContributorIdGetData, ThrowOnError>) => (options.client ?? client).get<GetContributorContributorsContributorIdGetResponses, GetContributorContributorsContributorIdGetErrors, ThrowOnError>({ url: '/contributors/{contributor_id}', ...options });
+export const getContributor = <ThrowOnError extends boolean = false>(options: Options<GetContributorData, ThrowOnError>) => (options.client ?? client).get<GetContributorResponses, GetContributorErrors, ThrowOnError>({ url: '/contributors/{contributor_id}', ...options });
