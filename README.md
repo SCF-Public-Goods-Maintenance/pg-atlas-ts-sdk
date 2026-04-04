@@ -36,7 +36,7 @@ client.setConfig({
   apiKey: "your-github-oidc-token",
 });
 
-const result = await ingestSbom(mySbom); 
+const result = await ingestSbom(mySbom);
 console.log(`Accepted ${result.package_count} packages for ${result.repository}`);
 ```
 
@@ -79,4 +79,6 @@ The SDK can be configured using `client.setConfig` for global usage or by passin
 
 ## License
 
-MPL-2.0
+Copyright 2026 PG Atlas Contributors
+
+[MIT License](https://opensource.org/license/mit)

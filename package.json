@@ -24,11 +24,12 @@
   "keywords": [
     "stellar",
     "soroban",
+    "public-goods",
     "atlas",
     "sdk"
   ],
-  "author": "SCF-Public-Goods-Maintenance",
-  "license": "MPL-2.0",
+  "author": "PG Atlas Contributors",
+  "license": "MIT",
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.90.10",
     "typescript": "^5.5.3",
