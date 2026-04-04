@@ -4,9 +4,21 @@ const https = require("https");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const SPEC_URL = "https://pg-atlas-backend-h8gen.ondigitalocean.app/openapi.json";
 const SPEC_PATH = path.join(ROOT, "openapi.json");
 const PKG_PATH = path.join(ROOT, "package.json");
+const API_CONFIG_PATH = path.join(ROOT, "src", "api-config.json");
+
+/**
+ * Read and normalize the API base URL from the shared SDK config file.
+ */
+function readApiBaseUrl() {
+  const apiConfig = JSON.parse(fs.readFileSync(API_CONFIG_PATH, "utf8"));
+  if (!apiConfig.apiBaseUrl || typeof apiConfig.apiBaseUrl !== "string") {
+    throw new Error("Invalid src/api-config.json: missing apiBaseUrl");
+  }
+
+  return apiConfig.apiBaseUrl.replace(/\/+$/, "");
+}
 
 function fetchJson(url) {
   return new Promise((resolve, reject) => {
@@ -31,8 +43,10 @@ function fetchJson(url) {
 
 async function main() {
   try {
+    const specUrl = `${readApiBaseUrl()}/openapi.json`;
+
     console.log("⏳ Fetching PG Atlas OpenAPI spec…");
-    const openapi = await fetchJson(SPEC_URL);
+    const openapi = await fetchJson(specUrl);
 
     // Write pretty‑printed spec to file
     const pretty = JSON.stringify(openapi, null, 4) + "\n";
