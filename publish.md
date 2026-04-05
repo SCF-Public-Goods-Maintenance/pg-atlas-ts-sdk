@@ -33,7 +33,7 @@ Step behavior:
 
 ## Manual Release Workflow
 
-1. Open the [Manual Release](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-sdk/actions/workflows/manual-release.yml) workflow page.
+1. Open the [Manual Release](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-ts-sdk/actions/workflows/manual-release.yml) workflow page.
 1. Trigger the workflow with `dry-run = true` first.
 1. The workflow sequence is: update SDK, rewrite tests, test, build, then prepare release artifacts.
 1. Review generated schema, SDK, and rewritten tests in the prepare release changes.

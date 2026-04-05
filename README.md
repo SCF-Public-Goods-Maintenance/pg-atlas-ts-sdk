@@ -54,7 +54,7 @@ Configure the shared generated client using `client.setConfig(...)`, or create p
 
 | Attribute              | Default                                             | Description                                                                                     |
 | ---------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `baseUrl`              | `https://pg-atlas-backend-h8gen.ondigitalocean.app` | The root URL of the PG Atlas API.                                                               |
+| `baseUrl`              | `https://api.pgatlas.xyz` | The root URL of the PG Atlas API.                                                               |
 | `Authorization` header | `unset`                                             | Bearer token used for authenticated requests (for example GitHub OIDC JWT on ingest endpoints). |
 
 ## License
