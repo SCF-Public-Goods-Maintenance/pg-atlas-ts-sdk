@@ -75,21 +75,22 @@ jobs:
       # Accepted risk: we update the local checkout's origin URL to embed the
       # release app token. This is a repo-local change in the ephemeral runner
       # workspace only, not a global git config change. The origin URL carries
-      # the token until the job ends, but no other workflow step should reuse it
-      # except the explicit release pushes below.
-      - name: Commit release bump
+      # the token until the job ends, and the tag push step reuses it.
+      - name: Configure git and commit release bump
         run: |
           V=${{ steps.get_version.outputs.VER }}
           git add .
           git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}.git
+          git config user.name "${{ steps.app-token.outputs.app-slug }}[bot]"
+          git config user.email "${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
           if ! git diff --cached --quiet; then
-            git -c user.name='${{ steps.app-token.outputs.app-slug }}[bot]' -c user.email='${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com' commit -m "prepare release $V"
+            git commit -m "prepare release $V"
             git push origin HEAD:${{ github.ref_name }}
           else
             echo "⏭ nothing to commit, continuing…"
           fi
 
-      - name: Create & push tag
+      - name: Create and push tag
         if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           V=${{ steps.get_version.outputs.VER }}
