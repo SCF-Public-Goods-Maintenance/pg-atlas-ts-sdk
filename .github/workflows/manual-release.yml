@@ -8,20 +8,39 @@ on:
         required: true
         default: "true"
 
-permissions:
-  id-token: write
-  contents: write
-
 jobs:
   release:
     name: 🚀 Release package
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/create-github-app-token@v3.1.1
+        id: app-token
+        with:
+          client-id: ${{ vars.GH_RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.GH_RELEASE_APP_PRIVATE_KEY }}
+
+      - name: Get Release App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Configure git operations as bot
+        run: |
+          gh auth setup-git
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+          ref: ${{ github.ref }}
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -59,8 +78,6 @@ jobs:
       - name: Commit release bump
         run: |
           V=${{ steps.get_version.outputs.VER }}
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           if ! git diff --cached --quiet; then
             git commit -m "prepare release $V"
