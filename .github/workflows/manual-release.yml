@@ -26,14 +26,6 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
-      - name: Configure git operations as bot
-        run: |
-          gh auth setup-git
-          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
-          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-
       - name: Checkout code
         uses: actions/checkout@v6
         with:
@@ -41,6 +33,11 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: ${{ github.ref }}
           persist-credentials: false
+
+      # Security note: checkout uses the app token only to clone the repository,
+      # but does not persist credentials for later steps. This prevents unrelated
+      # workflow code from accidentally reusing release bot permissions.
+      # The release bot token is applied explicitly only to the push commands below.
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -75,13 +72,17 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "VER=$VERSION" >> $GITHUB_OUTPUT
 
+      # Only the explicit release git operations below use the release bot token.
+      # We do not persist credentials globally, so no other step can push on behalf
+      # of the bot accidentally.
       - name: Commit release bump
         run: |
           V=${{ steps.get_version.outputs.VER }}
           git add .
           if ! git diff --cached --quiet; then
-            git commit -m "prepare release $V"
-            git push origin HEAD:${{ github.ref_name }}
+            git -c user.name='${{ steps.app-token.outputs.app-slug }}[bot]' -c user.email='${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com' commit -m "prepare release $V"
+            git -c http.extraheader="Authorization: Bearer ${{ steps.app-token.outputs.token }}" \
+              push origin HEAD:${{ github.ref_name }}
           else
             echo "⏭ nothing to commit, continuing…"
           fi
@@ -91,7 +92,8 @@ jobs:
         run: |
           V=${{ steps.get_version.outputs.VER }}
           git tag -a "v$V" -m "Release v$V"
-          git push origin "v$V"
+          git -c http.extraheader="Authorization: Bearer ${{ steps.app-token.outputs.token }}" \
+            push origin "v$V"
 
       - name: Publish to npm
         run: |
