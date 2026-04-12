@@ -28,6 +28,16 @@ describe('PG Atlas SDK generated contract tests', () => {
     }
   },
   {
+    "functionName": "getGitlogArtifact",
+    "httpMethod": "GET",
+    "expectedPath": "/gitlog/demo-id",
+    "requestOptions": {
+      "path": {
+        "artifact_id": "demo-id"
+      }
+    }
+  },
+  {
     "functionName": "getMetadata",
     "httpMethod": "GET",
     "expectedPath": "/metadata",
@@ -37,6 +47,16 @@ describe('PG Atlas SDK generated contract tests', () => {
     "functionName": "getProject",
     "httpMethod": "GET",
     "expectedPath": "/projects/demo-id",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
+    "functionName": "getProjectContributors",
+    "httpMethod": "GET",
+    "expectedPath": "/projects/demo-id/contributors",
     "requestOptions": {
       "path": {
         "canonical_id": "demo-id"
@@ -77,6 +97,16 @@ describe('PG Atlas SDK generated contract tests', () => {
     "functionName": "getRepo",
     "httpMethod": "GET",
     "expectedPath": "/repos/demo-id",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
+    "functionName": "getRepoContributors",
+    "httpMethod": "GET",
+    "expectedPath": "/repos/demo-id/contributors",
     "requestOptions": {
       "path": {
         "canonical_id": "demo-id"
@@ -128,6 +158,18 @@ describe('PG Atlas SDK generated contract tests', () => {
         "ping": "pong"
       }
     }
+  },
+  {
+    "functionName": "listContributors",
+    "httpMethod": "GET",
+    "expectedPath": "/contributors",
+    "requestOptions": {}
+  },
+  {
+    "functionName": "listGitlogArtifacts",
+    "httpMethod": "GET",
+    "expectedPath": "/gitlog",
+    "requestOptions": {}
   },
   {
     "functionName": "listProjects",

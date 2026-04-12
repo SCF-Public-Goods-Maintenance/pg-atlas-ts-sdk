@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetContributorData, GetContributorErrors, GetContributorResponses, GetMetadataData, GetMetadataResponses, GetProjectData, GetProjectDependsOnData, GetProjectDependsOnErrors, GetProjectDependsOnResponses, GetProjectErrors, GetProjectHasDependentsData, GetProjectHasDependentsErrors, GetProjectHasDependentsResponses, GetProjectReposData, GetProjectReposErrors, GetProjectReposResponses, GetProjectResponses, GetRepoData, GetRepoDependsOnData, GetRepoDependsOnErrors, GetRepoDependsOnResponses, GetRepoErrors, GetRepoHasDependentsData, GetRepoHasDependentsErrors, GetRepoHasDependentsResponses, GetRepoResponses, GetSbomSubmissionData, GetSbomSubmissionErrors, GetSbomSubmissionResponses, HealthData, HealthResponses, IngestSbomData, IngestSbomErrors, IngestSbomResponses, ListProjectsData, ListProjectsErrors, ListProjectsResponses, ListReposData, ListReposErrors, ListReposResponses, ListSbomSubmissionsData, ListSbomSubmissionsErrors, ListSbomSubmissionsResponses } from './types.gen';
+import type { GetContributorData, GetContributorErrors, GetContributorResponses, GetGitlogArtifactData, GetGitlogArtifactErrors, GetGitlogArtifactResponses, GetMetadataData, GetMetadataResponses, GetProjectContributorsData, GetProjectContributorsErrors, GetProjectContributorsResponses, GetProjectData, GetProjectDependsOnData, GetProjectDependsOnErrors, GetProjectDependsOnResponses, GetProjectErrors, GetProjectHasDependentsData, GetProjectHasDependentsErrors, GetProjectHasDependentsResponses, GetProjectReposData, GetProjectReposErrors, GetProjectReposResponses, GetProjectResponses, GetRepoContributorsData, GetRepoContributorsErrors, GetRepoContributorsResponses, GetRepoData, GetRepoDependsOnData, GetRepoDependsOnErrors, GetRepoDependsOnResponses, GetRepoErrors, GetRepoHasDependentsData, GetRepoHasDependentsErrors, GetRepoHasDependentsResponses, GetRepoResponses, GetSbomSubmissionData, GetSbomSubmissionErrors, GetSbomSubmissionResponses, HealthData, HealthResponses, IngestSbomData, IngestSbomErrors, IngestSbomResponses, ListContributorsData, ListContributorsErrors, ListContributorsResponses, ListGitlogArtifactsData, ListGitlogArtifactsErrors, ListGitlogArtifactsResponses, ListProjectsData, ListProjectsErrors, ListProjectsResponses, ListReposData, ListReposErrors, ListReposResponses, ListSbomSubmissionsData, ListSbomSubmissionsErrors, ListSbomSubmissionsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -92,6 +92,13 @@ export const getProject = <ThrowOnError extends boolean = false>(options: Option
 export const getProjectRepos = <ThrowOnError extends boolean = false>(options: Options<GetProjectReposData, ThrowOnError>) => (options.client ?? client).get<GetProjectReposResponses, GetProjectReposErrors, ThrowOnError>({ url: '/projects/{canonical_id}/repos', ...options });
 
 /**
+ * Contributors across a project's repos
+ *
+ * Paginated contributors aggregated across all repos belonging to the project.
+ */
+export const getProjectContributors = <ThrowOnError extends boolean = false>(options: Options<GetProjectContributorsData, ThrowOnError>) => (options.client ?? client).get<GetProjectContributorsResponses, GetProjectContributorsErrors, ThrowOnError>({ url: '/projects/{canonical_id}/contributors', ...options });
+
+/**
  * Project-level dependencies
  *
  * Collapsed project-level dependencies.
@@ -145,12 +152,26 @@ export const getRepoDependsOn = <ThrowOnError extends boolean = false>(options: 
 export const getRepoHasDependents = <ThrowOnError extends boolean = false>(options: Options<GetRepoHasDependentsData, ThrowOnError>) => (options.client ?? client).get<GetRepoHasDependentsResponses, GetRepoHasDependentsErrors, ThrowOnError>({ url: '/repos/{canonical_id}/has-dependents', ...options });
 
 /**
+ * Contributors for a repo
+ *
+ * Paginated contributors for one repo with commit-count and commit-date spans.
+ */
+export const getRepoContributors = <ThrowOnError extends boolean = false>(options: Options<GetRepoContributorsData, ThrowOnError>) => (options.client ?? client).get<GetRepoContributorsResponses, GetRepoContributorsErrors, ThrowOnError>({ url: '/repos/{canonical_id}/contributors', ...options });
+
+/**
  * Repo detail
  *
  * Full detail for a single repo including parent project, contributors,
  * releases, and dependency counts.
  */
 export const getRepo = <ThrowOnError extends boolean = false>(options: Options<GetRepoData, ThrowOnError>) => (options.client ?? client).get<GetRepoResponses, GetRepoErrors, ThrowOnError>({ url: '/repos/{canonical_id}', ...options });
+
+/**
+ * List contributors
+ *
+ * Paginated contributor list with optional case-insensitive name filtering.
+ */
+export const listContributors = <ThrowOnError extends boolean = false>(options?: Options<ListContributorsData, ThrowOnError>) => (options?.client ?? client).get<ListContributorsResponses, ListContributorsErrors, ThrowOnError>({ url: '/contributors', ...options });
 
 /**
  * Contributor detail
@@ -163,3 +184,17 @@ export const getRepo = <ThrowOnError extends boolean = false>(options: Options<G
  * commit dates across all repos.
  */
 export const getContributor = <ThrowOnError extends boolean = false>(options: Options<GetContributorData, ThrowOnError>) => (options.client ?? client).get<GetContributorResponses, GetContributorErrors, ThrowOnError>({ url: '/contributors/{contributor_id}', ...options });
+
+/**
+ * List gitlog processing attempts
+ *
+ * Paginated list of gitlog processing attempts with optional repo filter.
+ */
+export const listGitlogArtifacts = <ThrowOnError extends boolean = false>(options?: Options<ListGitlogArtifactsData, ThrowOnError>) => (options?.client ?? client).get<ListGitlogArtifactsResponses, ListGitlogArtifactsErrors, ThrowOnError>({ url: '/gitlog', ...options });
+
+/**
+ * Get gitlog processing attempt detail
+ *
+ * Return one gitlog attempt record with its raw artifact content when available.
+ */
+export const getGitlogArtifact = <ThrowOnError extends boolean = false>(options: Options<GetGitlogArtifactData, ThrowOnError>) => (options.client ?? client).get<GetGitlogArtifactResponses, GetGitlogArtifactErrors, ThrowOnError>({ url: '/gitlog/{artifact_id}', ...options });

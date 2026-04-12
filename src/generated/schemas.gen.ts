@@ -59,7 +59,7 @@ export const SubmissionStatusSchema = {
         'failed'
     ],
     title: 'SubmissionStatus',
-    description: 'Processing state of an SbomSubmission record.'
+    description: 'Processing state of an artifact-linked audit record.'
 } as const;
 
 export const ScfSubmissionSchema = {
@@ -581,6 +581,14 @@ export const RepoDetailResponseSchema = {
         },
         incoming_dep_counts: {
             $ref: '#/components/schemas/DepCounts'
+        },
+        active_contributors_30d: {
+            type: 'integer',
+            title: 'Active Contributors 30D'
+        },
+        active_contributors_90d: {
+            type: 'integer',
+            title: 'Active Contributors 90D'
         }
     },
     type: 'object',
@@ -602,10 +610,12 @@ export const RepoDetailResponseSchema = {
         'parent_project',
         'contributors',
         'outgoing_dep_counts',
-        'incoming_dep_counts'
+        'incoming_dep_counts',
+        'active_contributors_30d',
+        'active_contributors_90d'
     ],
     title: 'RepoDetailResponse',
-    description: 'Full repo detail with parent project, contributors, releases, and\ndependency counts.'
+    description: 'Full repo detail with parent project, contributors, releases, dependency counts,\nand active contributor stats.'
 } as const;
 
 export const DepCountsSchema = {
@@ -817,6 +827,48 @@ export const EdgeConfidenceSchema = {
     ],
     title: 'EdgeConfidence',
     description: 'How firmly an edge was established.'
+} as const;
+
+export const RepoContributorSummarySchema = {
+    properties: {
+        id: {
+            type: 'integer',
+            title: 'Id'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        email_hash: {
+            type: 'string',
+            title: 'Email Hash'
+        },
+        number_of_commits: {
+            type: 'integer',
+            title: 'Number Of Commits'
+        },
+        first_commit_date: {
+            type: 'string',
+            format: 'date-time',
+            title: 'First Commit Date'
+        },
+        last_commit_date: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Last Commit Date'
+        }
+    },
+    type: 'object',
+    required: [
+        'id',
+        'name',
+        'email_hash',
+        'number_of_commits',
+        'first_commit_date',
+        'last_commit_date'
+    ],
+    title: 'RepoContributorSummary',
+    description: 'Contributor summary with commit counts for one repo.'
 } as const;
 
 export const ProjectMetadataSchema = {
@@ -1054,6 +1106,14 @@ export const ProjectDetailResponseSchema = {
             type: 'integer',
             title: 'Project Id'
         },
+        active_contributors_30d: {
+            type: 'integer',
+            title: 'Active Contributors 30D'
+        },
+        active_contributors_90d: {
+            type: 'integer',
+            title: 'Active Contributors 90D'
+        },
         metadata: {
             $ref: '#/components/schemas/ProjectMetadata'
         }
@@ -1071,10 +1131,12 @@ export const ProjectDetailResponseSchema = {
         'adoption_score',
         'updated_at',
         'project_id',
+        'active_contributors_30d',
+        'active_contributors_90d',
         'metadata'
     ],
     title: 'ProjectDetailResponse',
-    description: 'Full project detail including validated metadata.\n\n``metadata`` is the normalised form of the ``project_metadata`` JSONB column.'
+    description: 'Full project detail including contributor stats and metadata.\n\n``metadata`` is the normalised form of the ``project_metadata`` JSONB column.'
 } as const;
 
 export const ProjectDependencySchema = {
@@ -1094,6 +1156,36 @@ export const ProjectDependencySchema = {
     ],
     title: 'ProjectDependency',
     description: 'A collapsed project-level dependency: aggregates repo-level edges\nbetween two projects into a single summary.'
+} as const;
+
+export const ProjectContributorSummarySchema = {
+    properties: {
+        id: {
+            type: 'integer',
+            title: 'Id'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        email_hash: {
+            type: 'string',
+            title: 'Email Hash'
+        },
+        total_commits_in_project: {
+            type: 'integer',
+            title: 'Total Commits In Project'
+        }
+    },
+    type: 'object',
+    required: [
+        'id',
+        'name',
+        'email_hash',
+        'total_commits_in_project'
+    ],
+    title: 'ProjectContributorSummary',
+    description: 'Contributor summary aggregated across all repos in a project.'
 } as const;
 
 export const PaginatedResponse_RepoSummary_Schema = {
@@ -1128,6 +1220,38 @@ export const PaginatedResponse_RepoSummary_Schema = {
     title: 'PaginatedResponse[RepoSummary]'
 } as const;
 
+export const PaginatedResponse_RepoContributorSummary_Schema = {
+    properties: {
+        items: {
+            items: {
+                $ref: '#/components/schemas/RepoContributorSummary'
+            },
+            type: 'array',
+            title: 'Items'
+        },
+        total: {
+            type: 'integer',
+            title: 'Total'
+        },
+        limit: {
+            type: 'integer',
+            title: 'Limit'
+        },
+        offset: {
+            type: 'integer',
+            title: 'Offset'
+        }
+    },
+    type: 'object',
+    required: [
+        'items',
+        'total',
+        'limit',
+        'offset'
+    ],
+    title: 'PaginatedResponse[RepoContributorSummary]'
+} as const;
+
 export const PaginatedResponse_ProjectSummary_Schema = {
     properties: {
         items: {
@@ -1160,6 +1284,184 @@ export const PaginatedResponse_ProjectSummary_Schema = {
     title: 'PaginatedResponse[ProjectSummary]'
 } as const;
 
+export const PaginatedResponse_ProjectContributorSummary_Schema = {
+    properties: {
+        items: {
+            items: {
+                $ref: '#/components/schemas/ProjectContributorSummary'
+            },
+            type: 'array',
+            title: 'Items'
+        },
+        total: {
+            type: 'integer',
+            title: 'Total'
+        },
+        limit: {
+            type: 'integer',
+            title: 'Limit'
+        },
+        offset: {
+            type: 'integer',
+            title: 'Offset'
+        }
+    },
+    type: 'object',
+    required: [
+        'items',
+        'total',
+        'limit',
+        'offset'
+    ],
+    title: 'PaginatedResponse[ProjectContributorSummary]'
+} as const;
+
+export const PaginatedResponse_GitLogArtifactSummary_Schema = {
+    properties: {
+        items: {
+            items: {
+                $ref: '#/components/schemas/GitLogArtifactSummary'
+            },
+            type: 'array',
+            title: 'Items'
+        },
+        total: {
+            type: 'integer',
+            title: 'Total'
+        },
+        limit: {
+            type: 'integer',
+            title: 'Limit'
+        },
+        offset: {
+            type: 'integer',
+            title: 'Offset'
+        }
+    },
+    type: 'object',
+    required: [
+        'items',
+        'total',
+        'limit',
+        'offset'
+    ],
+    title: 'PaginatedResponse[GitLogArtifactSummary]'
+} as const;
+
+export const GitLogArtifactSummarySchema = {
+    properties: {
+        id: {
+            type: 'integer',
+            title: 'Id'
+        },
+        repo_id: {
+            type: 'integer',
+            title: 'Repo Id'
+        },
+        repo_canonical_id: {
+            type: 'string',
+            title: 'Repo Canonical Id'
+        },
+        repo_display_name: {
+            type: 'string',
+            title: 'Repo Display Name'
+        },
+        artifact_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Artifact Path'
+        },
+        status: {
+            $ref: '#/components/schemas/SubmissionStatus'
+        },
+        error_detail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Error Detail'
+        },
+        since_months: {
+            type: 'integer',
+            title: 'Since Months'
+        },
+        submitted_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Submitted At'
+        },
+        processed_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Processed At'
+        }
+    },
+    type: 'object',
+    required: [
+        'id',
+        'repo_id',
+        'repo_canonical_id',
+        'repo_display_name',
+        'artifact_path',
+        'status',
+        'error_detail',
+        'since_months',
+        'submitted_at',
+        'processed_at'
+    ],
+    title: 'GitLogArtifactSummary',
+    description: 'Compact gitlog artifact audit record for list endpoints.'
+} as const;
+
+export const PaginatedResponse_ContributorSummary_Schema = {
+    properties: {
+        items: {
+            items: {
+                $ref: '#/components/schemas/ContributorSummary'
+            },
+            type: 'array',
+            title: 'Items'
+        },
+        total: {
+            type: 'integer',
+            title: 'Total'
+        },
+        limit: {
+            type: 'integer',
+            title: 'Limit'
+        },
+        offset: {
+            type: 'integer',
+            title: 'Offset'
+        }
+    },
+    type: 'object',
+    required: [
+        'items',
+        'total',
+        'limit',
+        'offset'
+    ],
+    title: 'PaginatedResponse[ContributorSummary]'
+} as const;
+
 export const MetadataResponseSchema = {
     properties: {
         total_projects: {
@@ -1174,6 +1476,10 @@ export const MetadataResponseSchema = {
             type: 'integer',
             title: 'Total Repos'
         },
+        active_repos_90d: {
+            type: 'integer',
+            title: 'Active Repos 90D'
+        },
         total_external_repos: {
             type: 'integer',
             title: 'Total External Repos'
@@ -1185,6 +1491,14 @@ export const MetadataResponseSchema = {
         total_contributor_edges: {
             type: 'integer',
             title: 'Total Contributor Edges'
+        },
+        active_contributors_30d: {
+            type: 'integer',
+            title: 'Active Contributors 30D'
+        },
+        active_contributors_90d: {
+            type: 'integer',
+            title: 'Active Contributors 90D'
         },
         last_updated: {
             anyOf: [
@@ -1204,9 +1518,12 @@ export const MetadataResponseSchema = {
         'total_projects',
         'active_projects',
         'total_repos',
+        'active_repos_90d',
         'total_external_repos',
         'total_dependency_edges',
         'total_contributor_edges',
+        'active_contributors_30d',
+        'active_contributors_90d',
         'last_updated'
     ],
     title: 'MetadataResponse',
@@ -1245,6 +1562,99 @@ export const HTTPValidationErrorSchema = {
     },
     type: 'object',
     title: 'HTTPValidationError'
+} as const;
+
+export const GitLogArtifactDetailResponseSchema = {
+    properties: {
+        id: {
+            type: 'integer',
+            title: 'Id'
+        },
+        repo_id: {
+            type: 'integer',
+            title: 'Repo Id'
+        },
+        repo_canonical_id: {
+            type: 'string',
+            title: 'Repo Canonical Id'
+        },
+        repo_display_name: {
+            type: 'string',
+            title: 'Repo Display Name'
+        },
+        artifact_path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Artifact Path'
+        },
+        status: {
+            $ref: '#/components/schemas/SubmissionStatus'
+        },
+        error_detail: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Error Detail'
+        },
+        since_months: {
+            type: 'integer',
+            title: 'Since Months'
+        },
+        submitted_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Submitted At'
+        },
+        processed_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Processed At'
+        },
+        raw_artifact: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Raw Artifact'
+        }
+    },
+    type: 'object',
+    required: [
+        'id',
+        'repo_id',
+        'repo_canonical_id',
+        'repo_display_name',
+        'artifact_path',
+        'status',
+        'error_detail',
+        'since_months',
+        'submitted_at',
+        'processed_at'
+    ],
+    title: 'GitLogArtifactDetailResponse',
+    description: 'Full gitlog artifact audit record including raw artifact content.'
 } as const;
 
 export const ContributorDetailResponseSchema = {

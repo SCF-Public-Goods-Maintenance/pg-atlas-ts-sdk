@@ -1,6 +1,6 @@
 {
   "name": "@pg-atlas/data-sdk",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "TypeScript SDK for the PG Atlas API",
   "keywords": [
     "stellar",

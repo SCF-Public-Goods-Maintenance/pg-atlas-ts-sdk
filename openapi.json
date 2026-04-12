@@ -7,7 +7,7 @@
             "name": "Mozilla Public License v2.0",
             "identifier": "MPL-2.0"
         },
-        "version": "0.4.1"
+        "version": "0.5.0"
     },
     "paths": {
         "/health": {
@@ -457,6 +457,96 @@
                 }
             }
         },
+        "/projects/{canonical_id}/contributors": {
+            "get": {
+                "tags": [
+                    "Graph: Projects",
+                    "Graph: Contributors",
+                    "Graph: Contributor Graph",
+                    "Source: GitHub"
+                ],
+                "summary": "Contributors across a project's repos",
+                "description": "Paginated contributors aggregated across all repos belonging to the project.",
+                "operationId": "get_project_contributors",
+                "parameters": [
+                    {
+                        "name": "canonical_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Canonical Id"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "maxLength": 256
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Search"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 200,
+                            "minimum": 1,
+                            "description": "Maximum number of items to return",
+                            "default": 50,
+                            "title": "Limit"
+                        },
+                        "description": "Maximum number of items to return"
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of items to skip",
+                            "default": 0,
+                            "title": "Offset"
+                        },
+                        "description": "Number of items to skip"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedResponse_ProjectContributorSummary_"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/projects/{canonical_id}/depends-on": {
             "get": {
                 "tags": [
@@ -747,6 +837,96 @@
                 }
             }
         },
+        "/repos/{canonical_id}/contributors": {
+            "get": {
+                "tags": [
+                    "Graph: Repos",
+                    "Graph: Contributors",
+                    "Graph: Contributor Graph",
+                    "Source: GitHub"
+                ],
+                "summary": "Contributors for a repo",
+                "description": "Paginated contributors for one repo with commit-count and commit-date spans.",
+                "operationId": "get_repo_contributors",
+                "parameters": [
+                    {
+                        "name": "canonical_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Canonical Id"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "maxLength": 256
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Search"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 200,
+                            "minimum": 1,
+                            "description": "Maximum number of items to return",
+                            "default": 50,
+                            "title": "Limit"
+                        },
+                        "description": "Maximum number of items to return"
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of items to skip",
+                            "default": 0,
+                            "title": "Offset"
+                        },
+                        "description": "Number of items to skip"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedResponse_RepoContributorSummary_"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/repos/{canonical_id}": {
             "get": {
                 "tags": [
@@ -793,6 +973,86 @@
                 }
             }
         },
+        "/contributors": {
+            "get": {
+                "tags": [
+                    "Graph: Contributors",
+                    "Graph: Contributor Graph",
+                    "Source: GitHub"
+                ],
+                "summary": "List contributors",
+                "description": "Paginated contributor list with optional case-insensitive name filtering.",
+                "operationId": "list_contributors",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "maxLength": 256
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Search"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 200,
+                            "minimum": 1,
+                            "description": "Maximum number of items to return",
+                            "default": 50,
+                            "title": "Limit"
+                        },
+                        "description": "Maximum number of items to return"
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of items to skip",
+                            "default": 0,
+                            "title": "Offset"
+                        },
+                        "description": "Number of items to skip"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedResponse_ContributorSummary_"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/contributors/{contributor_id}": {
             "get": {
                 "tags": [
@@ -821,6 +1081,132 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ContributorDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gitlog": {
+            "get": {
+                "tags": [
+                    "Graph: Contributor Graph",
+                    "Source: GitHub",
+                    "Source: PG Atlas"
+                ],
+                "summary": "List gitlog processing attempts",
+                "description": "Paginated list of gitlog processing attempts with optional repo filter.",
+                "operationId": "list_gitlog_artifacts",
+                "parameters": [
+                    {
+                        "name": "repo",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Filter by repo canonical_id (exact match)",
+                            "title": "Repo"
+                        },
+                        "description": "Filter by repo canonical_id (exact match)"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 200,
+                            "minimum": 1,
+                            "description": "Maximum number of items to return",
+                            "default": 50,
+                            "title": "Limit"
+                        },
+                        "description": "Maximum number of items to return"
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of items to skip",
+                            "default": 0,
+                            "title": "Offset"
+                        },
+                        "description": "Number of items to skip"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedResponse_GitLogArtifactSummary_"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gitlog/{artifact_id}": {
+            "get": {
+                "tags": [
+                    "Graph: Contributor Graph",
+                    "Source: GitHub",
+                    "Source: PG Atlas"
+                ],
+                "summary": "Get gitlog processing attempt detail",
+                "description": "Return one gitlog attempt record with its raw artifact content when available.",
+                "operationId": "get_gitlog_artifact",
+                "parameters": [
+                    {
+                        "name": "artifact_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Artifact Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitLogArtifactDetailResponse"
                                 }
                             }
                         }
@@ -1020,6 +1406,179 @@
                 "title": "EdgeConfidence",
                 "description": "How firmly an edge was established."
             },
+            "GitLogArtifactDetailResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "repo_id": {
+                        "type": "integer",
+                        "title": "Repo Id"
+                    },
+                    "repo_canonical_id": {
+                        "type": "string",
+                        "title": "Repo Canonical Id"
+                    },
+                    "repo_display_name": {
+                        "type": "string",
+                        "title": "Repo Display Name"
+                    },
+                    "artifact_path": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Artifact Path"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SubmissionStatus"
+                    },
+                    "error_detail": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Error Detail"
+                    },
+                    "since_months": {
+                        "type": "integer",
+                        "title": "Since Months"
+                    },
+                    "submitted_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Submitted At"
+                    },
+                    "processed_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Processed At"
+                    },
+                    "raw_artifact": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Raw Artifact"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "repo_id",
+                    "repo_canonical_id",
+                    "repo_display_name",
+                    "artifact_path",
+                    "status",
+                    "error_detail",
+                    "since_months",
+                    "submitted_at",
+                    "processed_at"
+                ],
+                "title": "GitLogArtifactDetailResponse",
+                "description": "Full gitlog artifact audit record including raw artifact content."
+            },
+            "GitLogArtifactSummary": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "repo_id": {
+                        "type": "integer",
+                        "title": "Repo Id"
+                    },
+                    "repo_canonical_id": {
+                        "type": "string",
+                        "title": "Repo Canonical Id"
+                    },
+                    "repo_display_name": {
+                        "type": "string",
+                        "title": "Repo Display Name"
+                    },
+                    "artifact_path": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Artifact Path"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SubmissionStatus"
+                    },
+                    "error_detail": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Error Detail"
+                    },
+                    "since_months": {
+                        "type": "integer",
+                        "title": "Since Months"
+                    },
+                    "submitted_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Submitted At"
+                    },
+                    "processed_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Processed At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "repo_id",
+                    "repo_canonical_id",
+                    "repo_display_name",
+                    "artifact_path",
+                    "status",
+                    "error_detail",
+                    "since_months",
+                    "submitted_at",
+                    "processed_at"
+                ],
+                "title": "GitLogArtifactSummary",
+                "description": "Compact gitlog artifact audit record for list endpoints."
+            },
             "HTTPValidationError": {
                 "properties": {
                     "detail": {
@@ -1066,6 +1625,10 @@
                         "type": "integer",
                         "title": "Total Repos"
                     },
+                    "active_repos_90d": {
+                        "type": "integer",
+                        "title": "Active Repos 90D"
+                    },
                     "total_external_repos": {
                         "type": "integer",
                         "title": "Total External Repos"
@@ -1077,6 +1640,14 @@
                     "total_contributor_edges": {
                         "type": "integer",
                         "title": "Total Contributor Edges"
+                    },
+                    "active_contributors_30d": {
+                        "type": "integer",
+                        "title": "Active Contributors 30D"
+                    },
+                    "active_contributors_90d": {
+                        "type": "integer",
+                        "title": "Active Contributors 90D"
                     },
                     "last_updated": {
                         "anyOf": [
@@ -1096,13 +1667,109 @@
                     "total_projects",
                     "active_projects",
                     "total_repos",
+                    "active_repos_90d",
                     "total_external_repos",
                     "total_dependency_edges",
                     "total_contributor_edges",
+                    "active_contributors_30d",
+                    "active_contributors_90d",
                     "last_updated"
                 ],
                 "title": "MetadataResponse",
                 "description": "Ecosystem-wide summary statistics returned by ``GET /metadata``."
+            },
+            "PaginatedResponse_ContributorSummary_": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/ContributorSummary"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "title": "Limit"
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "title": "Offset"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "limit",
+                    "offset"
+                ],
+                "title": "PaginatedResponse[ContributorSummary]"
+            },
+            "PaginatedResponse_GitLogArtifactSummary_": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/GitLogArtifactSummary"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "title": "Limit"
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "title": "Offset"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "limit",
+                    "offset"
+                ],
+                "title": "PaginatedResponse[GitLogArtifactSummary]"
+            },
+            "PaginatedResponse_ProjectContributorSummary_": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/ProjectContributorSummary"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "title": "Limit"
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "title": "Offset"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "limit",
+                    "offset"
+                ],
+                "title": "PaginatedResponse[ProjectContributorSummary]"
             },
             "PaginatedResponse_ProjectSummary_": {
                 "properties": {
@@ -1135,6 +1802,37 @@
                 ],
                 "title": "PaginatedResponse[ProjectSummary]"
             },
+            "PaginatedResponse_RepoContributorSummary_": {
+                "properties": {
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/RepoContributorSummary"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "total": {
+                        "type": "integer",
+                        "title": "Total"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "title": "Limit"
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "title": "Offset"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "items",
+                    "total",
+                    "limit",
+                    "offset"
+                ],
+                "title": "PaginatedResponse[RepoContributorSummary]"
+            },
             "PaginatedResponse_RepoSummary_": {
                 "properties": {
                     "items": {
@@ -1165,6 +1863,35 @@
                     "offset"
                 ],
                 "title": "PaginatedResponse[RepoSummary]"
+            },
+            "ProjectContributorSummary": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "email_hash": {
+                        "type": "string",
+                        "title": "Email Hash"
+                    },
+                    "total_commits_in_project": {
+                        "type": "integer",
+                        "title": "Total Commits In Project"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "email_hash",
+                    "total_commits_in_project"
+                ],
+                "title": "ProjectContributorSummary",
+                "description": "Contributor summary aggregated across all repos in a project."
             },
             "ProjectDependency": {
                 "properties": {
@@ -1264,6 +1991,14 @@
                         "type": "integer",
                         "title": "Project Id"
                     },
+                    "active_contributors_30d": {
+                        "type": "integer",
+                        "title": "Active Contributors 30D"
+                    },
+                    "active_contributors_90d": {
+                        "type": "integer",
+                        "title": "Active Contributors 90D"
+                    },
                     "metadata": {
                         "$ref": "#/components/schemas/ProjectMetadata"
                     }
@@ -1281,10 +2016,12 @@
                     "adoption_score",
                     "updated_at",
                     "project_id",
+                    "active_contributors_30d",
+                    "active_contributors_90d",
                     "metadata"
                 ],
                 "title": "ProjectDetailResponse",
-                "description": "Full project detail including validated metadata.\n\n``metadata`` is the normalised form of the ``project_metadata`` JSONB column."
+                "description": "Full project detail including contributor stats and metadata.\n\n``metadata`` is the normalised form of the ``project_metadata`` JSONB column."
             },
             "ProjectMetadata": {
                 "properties": {
@@ -1542,6 +2279,47 @@
                 "title": "ProjectType",
                 "description": "Classification of a Project within the PG Atlas universe."
             },
+            "RepoContributorSummary": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "email_hash": {
+                        "type": "string",
+                        "title": "Email Hash"
+                    },
+                    "number_of_commits": {
+                        "type": "integer",
+                        "title": "Number Of Commits"
+                    },
+                    "first_commit_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "First Commit Date"
+                    },
+                    "last_commit_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Last Commit Date"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "email_hash",
+                    "number_of_commits",
+                    "first_commit_date",
+                    "last_commit_date"
+                ],
+                "title": "RepoContributorSummary",
+                "description": "Contributor summary with commit counts for one repo."
+            },
             "RepoDependency": {
                 "properties": {
                     "canonical_id": {
@@ -1729,6 +2507,14 @@
                     },
                     "incoming_dep_counts": {
                         "$ref": "#/components/schemas/DepCounts"
+                    },
+                    "active_contributors_30d": {
+                        "type": "integer",
+                        "title": "Active Contributors 30D"
+                    },
+                    "active_contributors_90d": {
+                        "type": "integer",
+                        "title": "Active Contributors 90D"
                     }
                 },
                 "type": "object",
@@ -1750,10 +2536,12 @@
                     "parent_project",
                     "contributors",
                     "outgoing_dep_counts",
-                    "incoming_dep_counts"
+                    "incoming_dep_counts",
+                    "active_contributors_30d",
+                    "active_contributors_90d"
                 ],
                 "title": "RepoDetailResponse",
-                "description": "Full repo detail with parent project, contributors, releases, and\ndependency counts."
+                "description": "Full repo detail with parent project, contributors, releases, dependency counts,\nand active contributor stats."
             },
             "RepoSummary": {
                 "properties": {
@@ -2127,7 +2915,7 @@
                     "failed"
                 ],
                 "title": "SubmissionStatus",
-                "description": "Processing state of an SbomSubmission record."
+                "description": "Processing state of an artifact-linked audit record."
             },
             "ValidationError": {
                 "properties": {

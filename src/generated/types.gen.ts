@@ -42,7 +42,7 @@ export type ValidationError = {
 /**
  * SubmissionStatus
  *
- * Processing state of an SbomSubmission record.
+ * Processing state of an artifact-linked audit record.
  */
 export type SubmissionStatus = 'pending' | 'processed' | 'failed';
 
@@ -270,8 +270,8 @@ export type RepoSummary = {
 /**
  * RepoDetailResponse
  *
- * Full repo detail with parent project, contributors, releases, and
- * dependency counts.
+ * Full repo detail with parent project, contributors, releases, dependency counts,
+ * and active contributor stats.
  */
 export type RepoDetailResponse = {
     /**
@@ -336,6 +336,14 @@ export type RepoDetailResponse = {
     contributors: Array<ContributorSummary>;
     outgoing_dep_counts: DepCounts;
     incoming_dep_counts: DepCounts;
+    /**
+     * Active Contributors 30D
+     */
+    active_contributors_30d: number;
+    /**
+     * Active Contributors 90D
+     */
+    active_contributors_90d: number;
 };
 
 /**
@@ -470,6 +478,38 @@ export type RepoDependency = {
 export type EdgeConfidence = 'verified-sbom' | 'inferred-shadow';
 
 /**
+ * RepoContributorSummary
+ *
+ * Contributor summary with commit counts for one repo.
+ */
+export type RepoContributorSummary = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Email Hash
+     */
+    email_hash: string;
+    /**
+     * Number Of Commits
+     */
+    number_of_commits: number;
+    /**
+     * First Commit Date
+     */
+    first_commit_date: string;
+    /**
+     * Last Commit Date
+     */
+    last_commit_date: string;
+};
+
+/**
  * ProjectMetadata
  *
  * Validates and normalises the ``project_metadata`` JSONB column on ``Project``.
@@ -540,7 +580,7 @@ export type ProjectMetadata = {
 /**
  * ProjectDetailResponse
  *
- * Full project detail including validated metadata.
+ * Full project detail including contributor stats and metadata.
  *
  * ``metadata`` is the normalised form of the ``project_metadata`` JSONB column.
  */
@@ -583,6 +623,14 @@ export type ProjectDetailResponse = {
      * Project Id
      */
     project_id: number;
+    /**
+     * Active Contributors 30D
+     */
+    active_contributors_30d: number;
+    /**
+     * Active Contributors 90D
+     */
+    active_contributors_90d: number;
     metadata: ProjectMetadata;
 };
 
@@ -601,6 +649,30 @@ export type ProjectDependency = {
 };
 
 /**
+ * ProjectContributorSummary
+ *
+ * Contributor summary aggregated across all repos in a project.
+ */
+export type ProjectContributorSummary = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Email Hash
+     */
+    email_hash: string;
+    /**
+     * Total Commits In Project
+     */
+    total_commits_in_project: number;
+};
+
+/**
  * PaginatedResponse[RepoSummary]
  */
 export type PaginatedResponseRepoSummary = {
@@ -608,6 +680,28 @@ export type PaginatedResponseRepoSummary = {
      * Items
      */
     items: Array<RepoSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * PaginatedResponse[RepoContributorSummary]
+ */
+export type PaginatedResponseRepoContributorSummary = {
+    /**
+     * Items
+     */
+    items: Array<RepoContributorSummary>;
     /**
      * Total
      */
@@ -645,6 +739,117 @@ export type PaginatedResponseProjectSummary = {
 };
 
 /**
+ * PaginatedResponse[ProjectContributorSummary]
+ */
+export type PaginatedResponseProjectContributorSummary = {
+    /**
+     * Items
+     */
+    items: Array<ProjectContributorSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * PaginatedResponse[GitLogArtifactSummary]
+ */
+export type PaginatedResponseGitLogArtifactSummary = {
+    /**
+     * Items
+     */
+    items: Array<GitLogArtifactSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * GitLogArtifactSummary
+ *
+ * Compact gitlog artifact audit record for list endpoints.
+ */
+export type GitLogArtifactSummary = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Repo Id
+     */
+    repo_id: number;
+    /**
+     * Repo Canonical Id
+     */
+    repo_canonical_id: string;
+    /**
+     * Repo Display Name
+     */
+    repo_display_name: string;
+    /**
+     * Artifact Path
+     */
+    artifact_path: string | null;
+    status: SubmissionStatus;
+    /**
+     * Error Detail
+     */
+    error_detail: string | null;
+    /**
+     * Since Months
+     */
+    since_months: number;
+    /**
+     * Submitted At
+     */
+    submitted_at: string;
+    /**
+     * Processed At
+     */
+    processed_at: string | null;
+};
+
+/**
+ * PaginatedResponse[ContributorSummary]
+ */
+export type PaginatedResponseContributorSummary = {
+    /**
+     * Items
+     */
+    items: Array<ContributorSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
  * MetadataResponse
  *
  * Ecosystem-wide summary statistics returned by ``GET /metadata``.
@@ -663,6 +868,10 @@ export type MetadataResponse = {
      */
     total_repos: number;
     /**
+     * Active Repos 90D
+     */
+    active_repos_90d: number;
+    /**
      * Total External Repos
      */
     total_external_repos: number;
@@ -674,6 +883,14 @@ export type MetadataResponse = {
      * Total Contributor Edges
      */
     total_contributor_edges: number;
+    /**
+     * Active Contributors 30D
+     */
+    active_contributors_30d: number;
+    /**
+     * Active Contributors 90D
+     */
+    active_contributors_90d: number;
     /**
      * Last Updated
      */
@@ -704,6 +921,55 @@ export type HttpValidationError = {
      * Detail
      */
     detail?: Array<ValidationError>;
+};
+
+/**
+ * GitLogArtifactDetailResponse
+ *
+ * Full gitlog artifact audit record including raw artifact content.
+ */
+export type GitLogArtifactDetailResponse = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Repo Id
+     */
+    repo_id: number;
+    /**
+     * Repo Canonical Id
+     */
+    repo_canonical_id: string;
+    /**
+     * Repo Display Name
+     */
+    repo_display_name: string;
+    /**
+     * Artifact Path
+     */
+    artifact_path: string | null;
+    status: SubmissionStatus;
+    /**
+     * Error Detail
+     */
+    error_detail: string | null;
+    /**
+     * Since Months
+     */
+    since_months: number;
+    /**
+     * Submitted At
+     */
+    submitted_at: string;
+    /**
+     * Processed At
+     */
+    processed_at: string | null;
+    /**
+     * Raw Artifact
+     */
+    raw_artifact?: string | null;
 };
 
 /**
@@ -1038,6 +1304,53 @@ export type GetProjectReposResponses = {
 
 export type GetProjectReposResponse = GetProjectReposResponses[keyof GetProjectReposResponses];
 
+export type GetProjectContributorsData = {
+    body?: never;
+    path: {
+        /**
+         * Canonical Id
+         */
+        canonical_id: string;
+    };
+    query?: {
+        /**
+         * Search
+         */
+        search?: string | null;
+        /**
+         * Limit
+         *
+         * Maximum number of items to return
+         */
+        limit?: number;
+        /**
+         * Offset
+         *
+         * Number of items to skip
+         */
+        offset?: number;
+    };
+    url: '/projects/{canonical_id}/contributors';
+};
+
+export type GetProjectContributorsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetProjectContributorsError = GetProjectContributorsErrors[keyof GetProjectContributorsErrors];
+
+export type GetProjectContributorsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponseProjectContributorSummary;
+};
+
+export type GetProjectContributorsResponse = GetProjectContributorsResponses[keyof GetProjectContributorsResponses];
+
 export type GetProjectDependsOnData = {
     body?: never;
     path: {
@@ -1212,6 +1525,53 @@ export type GetRepoHasDependentsResponses = {
 
 export type GetRepoHasDependentsResponse = GetRepoHasDependentsResponses[keyof GetRepoHasDependentsResponses];
 
+export type GetRepoContributorsData = {
+    body?: never;
+    path: {
+        /**
+         * Canonical Id
+         */
+        canonical_id: string;
+    };
+    query?: {
+        /**
+         * Search
+         */
+        search?: string | null;
+        /**
+         * Limit
+         *
+         * Maximum number of items to return
+         */
+        limit?: number;
+        /**
+         * Offset
+         *
+         * Number of items to skip
+         */
+        offset?: number;
+    };
+    url: '/repos/{canonical_id}/contributors';
+};
+
+export type GetRepoContributorsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetRepoContributorsError = GetRepoContributorsErrors[keyof GetRepoContributorsErrors];
+
+export type GetRepoContributorsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponseRepoContributorSummary;
+};
+
+export type GetRepoContributorsResponse = GetRepoContributorsResponses[keyof GetRepoContributorsResponses];
+
 export type GetRepoData = {
     body?: never;
     path: {
@@ -1242,6 +1602,48 @@ export type GetRepoResponses = {
 
 export type GetRepoResponse = GetRepoResponses[keyof GetRepoResponses];
 
+export type ListContributorsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Search
+         */
+        search?: string | null;
+        /**
+         * Limit
+         *
+         * Maximum number of items to return
+         */
+        limit?: number;
+        /**
+         * Offset
+         *
+         * Number of items to skip
+         */
+        offset?: number;
+    };
+    url: '/contributors';
+};
+
+export type ListContributorsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListContributorsError = ListContributorsErrors[keyof ListContributorsErrors];
+
+export type ListContributorsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponseContributorSummary;
+};
+
+export type ListContributorsResponse = ListContributorsResponses[keyof ListContributorsResponses];
+
 export type GetContributorData = {
     body?: never;
     path: {
@@ -1271,3 +1673,77 @@ export type GetContributorResponses = {
 };
 
 export type GetContributorResponse = GetContributorResponses[keyof GetContributorResponses];
+
+export type ListGitlogArtifactsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Repo
+         *
+         * Filter by repo canonical_id (exact match)
+         */
+        repo?: string | null;
+        /**
+         * Limit
+         *
+         * Maximum number of items to return
+         */
+        limit?: number;
+        /**
+         * Offset
+         *
+         * Number of items to skip
+         */
+        offset?: number;
+    };
+    url: '/gitlog';
+};
+
+export type ListGitlogArtifactsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListGitlogArtifactsError = ListGitlogArtifactsErrors[keyof ListGitlogArtifactsErrors];
+
+export type ListGitlogArtifactsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponseGitLogArtifactSummary;
+};
+
+export type ListGitlogArtifactsResponse = ListGitlogArtifactsResponses[keyof ListGitlogArtifactsResponses];
+
+export type GetGitlogArtifactData = {
+    body?: never;
+    path: {
+        /**
+         * Artifact Id
+         */
+        artifact_id: number;
+    };
+    query?: never;
+    url: '/gitlog/{artifact_id}';
+};
+
+export type GetGitlogArtifactErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetGitlogArtifactError = GetGitlogArtifactErrors[keyof GetGitlogArtifactErrors];
+
+export type GetGitlogArtifactResponses = {
+    /**
+     * Successful Response
+     */
+    200: GitLogArtifactDetailResponse;
+};
+
+export type GetGitlogArtifactResponse = GetGitlogArtifactResponses[keyof GetGitlogArtifactResponses];
