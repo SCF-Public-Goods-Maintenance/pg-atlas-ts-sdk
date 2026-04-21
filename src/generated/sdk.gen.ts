@@ -19,13 +19,9 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 /**
- * Liveness check
+ * Readiness check
  *
- * Return the current health status and application version.
- *
- * This endpoint is intentionally dependency-free (no DB call) so that it
- * remains responsive even when the database is unreachable. A richer check
- * with named component statuses (db, graph) will be added in A2.
+ * Return the current readiness status and application version.
  */
 export const health = <ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>) => (options?.client ?? client).get<HealthResponses, unknown, ThrowOnError>({ url: '/health', ...options });
 
@@ -63,12 +59,14 @@ export const getMetadata = <ThrowOnError extends boolean = false>(options?: Opti
 /**
  * List projects
  *
- * Paginated list of SCF-funded projects with optional filters.
+ * Paginated list of SCF-funded projects with optional filters and sorting.
  *
  * - **project_type**: filter by `public-good` or `scf-project`.
  * - **activity_status**: filter by lifecycle status (`live`, `in-dev`, etc.).
  * - **search**: case-insensitive substring match on `display_name`.
- * - Results are ordered by `canonical_id` for deterministic pagination.
+ * - **sort**: comma-separated `field:direction` pairs for server-side ordering.
+ * - **category**: filter by exact project category string.
+ * - Default order is `canonical_id` for deterministic pagination.
  */
 export const listProjects = <ThrowOnError extends boolean = false>(options?: Options<ListProjectsData, ThrowOnError>) => (options?.client ?? client).get<ListProjectsResponses, ListProjectsErrors, ThrowOnError>({ url: '/projects', ...options });
 
@@ -123,11 +121,12 @@ export const getProjectHasDependents = <ThrowOnError extends boolean = false>(op
 /**
  * List repos
  *
- * Paginated list of in-ecosystem repos with optional filters.
+ * Paginated list of in-ecosystem repos with optional filters and sorting.
  *
  * - **project_id**: filter to repos belonging to a specific project.
  * - **search**: case-insensitive substring match on `display_name`.
- * - Results are ordered by `canonical_id` for deterministic pagination.
+ * - **sort**: comma-separated `field:direction` pairs for server-side ordering.
+ * - Default order is `canonical_id` for deterministic pagination.
  */
 export const listRepos = <ThrowOnError extends boolean = false>(options?: Options<ListReposData, ThrowOnError>) => (options?.client ?? client).get<ListReposResponses, ListReposErrors, ThrowOnError>({ url: '/repos', ...options });
 

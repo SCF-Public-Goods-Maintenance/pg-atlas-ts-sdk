@@ -327,7 +327,9 @@ export type RepoDetailResponse = {
      * Releases
      */
     releases: Array<{
-        [key: string]: unknown;
+        purl: string;
+        version: string;
+        release_date?: string;
     }> | null;
     parent_project: ProjectSummary | null;
     /**
@@ -906,11 +908,32 @@ export type HealthResponse = {
     /**
      * Status
      */
-    status: string;
+    status: 'live' | 'ready';
     /**
      * Version
      */
     version: string;
+    components: HealthComponents;
+};
+
+/**
+ * HealthComponents
+ *
+ * Component-level readiness details for GET /health.
+ */
+export type HealthComponents = {
+    /**
+     * Artifact Store
+     */
+    artifact_store: 'local' | 'IPFS';
+    /**
+     * Database
+     */
+    database: 'ready' | 'not-configured';
+    /**
+     * Schema Version
+     */
+    schema_version: string | null;
 };
 
 /**
@@ -1198,6 +1221,18 @@ export type ListProjectsData = {
          */
         search?: string | null;
         /**
+         * Sort
+         *
+         * Comma-separated field:direction pairs, e.g. 'criticality_score:desc,display_name:asc'.
+         */
+        sort?: string | null;
+        /**
+         * Category
+         *
+         * Filter by project category (exact match).
+         */
+        category?: string | null;
+        /**
          * Limit
          *
          * Maximum number of items to return
@@ -1427,6 +1462,12 @@ export type ListReposData = {
          * Search
          */
         search?: string | null;
+        /**
+         * Sort
+         *
+         * Comma-separated field:direction pairs, e.g. 'adoption_stars:desc,display_name:asc'.
+         */
+        sort?: string | null;
         /**
          * Limit
          *

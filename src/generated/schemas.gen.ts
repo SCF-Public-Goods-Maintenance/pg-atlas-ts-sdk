@@ -548,8 +548,25 @@ export const RepoDetailResponseSchema = {
             anyOf: [
                 {
                     items: {
-                        additionalProperties: true,
-                        type: 'object'
+                        properties: {
+                            purl: {
+                                type: 'string'
+                            },
+                            version: {
+                                type: 'string'
+                            },
+                            release_date: {
+                                type: 'string',
+                                default: ''
+                            }
+                        },
+                        type: 'object',
+                        required: [
+                            'purl',
+                            'version'
+                        ],
+                        title: 'Release',
+                        description: 'One normalized release record keyed by package PURL + version.'
                     },
                     type: 'array'
                 },
@@ -1534,20 +1551,68 @@ export const HealthResponseSchema = {
     properties: {
         status: {
             type: 'string',
+            enum: [
+                'live',
+                'ready'
+            ],
             title: 'Status'
         },
         version: {
             type: 'string',
             title: 'Version'
+        },
+        components: {
+            $ref: '#/components/schemas/HealthComponents'
         }
     },
     type: 'object',
     required: [
         'status',
-        'version'
+        'version',
+        'components'
     ],
     title: 'HealthResponse',
     description: 'Response body for GET /health.'
+} as const;
+
+export const HealthComponentsSchema = {
+    properties: {
+        artifact_store: {
+            type: 'string',
+            enum: [
+                'local',
+                'IPFS'
+            ],
+            title: 'Artifact Store'
+        },
+        database: {
+            type: 'string',
+            enum: [
+                'ready',
+                'not-configured'
+            ],
+            title: 'Database'
+        },
+        schema_version: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Schema Version'
+        }
+    },
+    type: 'object',
+    required: [
+        'artifact_store',
+        'database',
+        'schema_version'
+    ],
+    title: 'HealthComponents',
+    description: 'Component-level readiness details for GET /health.'
 } as const;
 
 export const HTTPValidationErrorSchema = {

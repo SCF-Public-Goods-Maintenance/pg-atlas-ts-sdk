@@ -7,7 +7,7 @@
             "name": "Mozilla Public License v2.0",
             "identifier": "MPL-2.0"
         },
-        "version": "0.5.0"
+        "version": "0.6.0"
     },
     "paths": {
         "/health": {
@@ -15,8 +15,8 @@
                 "tags": [
                     "health"
                 ],
-                "summary": "Liveness check",
-                "description": "Return the current health status and application version.\n\nThis endpoint is intentionally dependency-free (no DB call) so that it\nremains responsive even when the database is unreachable. A richer check\nwith named component statuses (db, graph) will be added in A2.",
+                "summary": "Readiness check",
+                "description": "Return the current readiness status and application version.",
                 "operationId": "health",
                 "responses": {
                     "200": {
@@ -236,7 +236,7 @@
                     "Source: PG Atlas"
                 ],
                 "summary": "List projects",
-                "description": "Paginated list of SCF-funded projects with optional filters.\n\n- **project_type**: filter by `public-good` or `scf-project`.\n- **activity_status**: filter by lifecycle status (`live`, `in-dev`, etc.).\n- **search**: case-insensitive substring match on `display_name`.\n- Results are ordered by `canonical_id` for deterministic pagination.",
+                "description": "Paginated list of SCF-funded projects with optional filters and sorting.\n\n- **project_type**: filter by `public-good` or `scf-project`.\n- **activity_status**: filter by lifecycle status (`live`, `in-dev`, etc.).\n- **search**: case-insensitive substring match on `display_name`.\n- **sort**: comma-separated `field:direction` pairs for server-side ordering.\n- **category**: filter by exact project category string.\n- Default order is `canonical_id` for deterministic pagination.",
                 "operationId": "list_projects",
                 "parameters": [
                     {
@@ -287,6 +287,44 @@
                             ],
                             "title": "Search"
                         }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "maxLength": 512
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Comma-separated field:direction pairs, e.g. 'criticality_score:desc,display_name:asc'.",
+                            "title": "Sort"
+                        },
+                        "description": "Comma-separated field:direction pairs, e.g. 'criticality_score:desc,display_name:asc'."
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "maxLength": 128
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Filter by project category (exact match).",
+                            "title": "Category"
+                        },
+                        "description": "Filter by project category (exact match)."
                     },
                     {
                         "name": "limit",
@@ -651,7 +689,7 @@
                     "Source: deps.dev"
                 ],
                 "summary": "List repos",
-                "description": "Paginated list of in-ecosystem repos with optional filters.\n\n- **project_id**: filter to repos belonging to a specific project.\n- **search**: case-insensitive substring match on `display_name`.\n- Results are ordered by `canonical_id` for deterministic pagination.",
+                "description": "Paginated list of in-ecosystem repos with optional filters and sorting.\n\n- **project_id**: filter to repos belonging to a specific project.\n- **search**: case-insensitive substring match on `display_name`.\n- **sort**: comma-separated `field:direction` pairs for server-side ordering.\n- Default order is `canonical_id` for deterministic pagination.",
                 "operationId": "list_repos",
                 "parameters": [
                     {
@@ -686,6 +724,25 @@
                             ],
                             "title": "Search"
                         }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "maxLength": 512
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Comma-separated field:direction pairs, e.g. 'adoption_stars:desc,display_name:asc'.",
+                            "title": "Sort"
+                        },
+                        "description": "Comma-separated field:direction pairs, e.g. 'adoption_stars:desc,display_name:asc'."
                     },
                     {
                         "name": "limit",
@@ -1592,21 +1649,68 @@
                 "type": "object",
                 "title": "HTTPValidationError"
             },
+            "HealthComponents": {
+                "properties": {
+                    "artifact_store": {
+                        "type": "string",
+                        "enum": [
+                            "local",
+                            "IPFS"
+                        ],
+                        "title": "Artifact Store"
+                    },
+                    "database": {
+                        "type": "string",
+                        "enum": [
+                            "ready",
+                            "not-configured"
+                        ],
+                        "title": "Database"
+                    },
+                    "schema_version": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Schema Version"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "artifact_store",
+                    "database",
+                    "schema_version"
+                ],
+                "title": "HealthComponents",
+                "description": "Component-level readiness details for GET /health."
+            },
             "HealthResponse": {
                 "properties": {
                     "status": {
                         "type": "string",
+                        "enum": [
+                            "live",
+                            "ready"
+                        ],
                         "title": "Status"
                     },
                     "version": {
                         "type": "string",
                         "title": "Version"
+                    },
+                    "components": {
+                        "$ref": "#/components/schemas/HealthComponents"
                     }
                 },
                 "type": "object",
                 "required": [
                     "status",
-                    "version"
+                    "version",
+                    "components"
                 ],
                 "title": "HealthResponse",
                 "description": "Response body for GET /health."
@@ -2474,8 +2578,25 @@
                         "anyOf": [
                             {
                                 "items": {
-                                    "additionalProperties": true,
-                                    "type": "object"
+                                    "properties": {
+                                        "purl": {
+                                            "type": "string"
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        },
+                                        "release_date": {
+                                            "type": "string",
+                                            "default": ""
+                                        }
+                                    },
+                                    "type": "object",
+                                    "required": [
+                                        "purl",
+                                        "version"
+                                    ],
+                                    "title": "Release",
+                                    "description": "One normalized release record keyed by package PURL + version."
                                 },
                                 "type": "array"
                             },
