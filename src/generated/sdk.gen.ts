@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetContributorData, GetContributorErrors, GetContributorResponses, GetGitlogArtifactData, GetGitlogArtifactErrors, GetGitlogArtifactResponses, GetMetadataData, GetMetadataResponses, GetProjectContributorsData, GetProjectContributorsErrors, GetProjectContributorsResponses, GetProjectData, GetProjectDependsOnData, GetProjectDependsOnErrors, GetProjectDependsOnResponses, GetProjectErrors, GetProjectHasDependentsData, GetProjectHasDependentsErrors, GetProjectHasDependentsResponses, GetProjectReposData, GetProjectReposErrors, GetProjectReposResponses, GetProjectResponses, GetRepoContributorsData, GetRepoContributorsErrors, GetRepoContributorsResponses, GetRepoData, GetRepoDependsOnData, GetRepoDependsOnErrors, GetRepoDependsOnResponses, GetRepoErrors, GetRepoHasDependentsData, GetRepoHasDependentsErrors, GetRepoHasDependentsResponses, GetRepoResponses, GetSbomSubmissionData, GetSbomSubmissionErrors, GetSbomSubmissionResponses, HealthData, HealthResponses, IngestSbomData, IngestSbomErrors, IngestSbomResponses, ListContributorsData, ListContributorsErrors, ListContributorsResponses, ListGitlogArtifactsData, ListGitlogArtifactsErrors, ListGitlogArtifactsResponses, ListProjectsData, ListProjectsErrors, ListProjectsResponses, ListReposData, ListReposErrors, ListReposResponses, ListSbomSubmissionsData, ListSbomSubmissionsErrors, ListSbomSubmissionsResponses } from './types.gen';
+import type { GetContributorData, GetContributorErrors, GetContributorResponses, GetGitlogArtifactData, GetGitlogArtifactErrors, GetGitlogArtifactResponses, GetMetadataData, GetMetadataResponses, GetProjectContributorsData, GetProjectContributorsErrors, GetProjectContributorsResponses, GetProjectData, GetProjectDependsOnData, GetProjectDependsOnErrors, GetProjectDependsOnResponses, GetProjectErrors, GetProjectHasDependentsData, GetProjectHasDependentsErrors, GetProjectHasDependentsResponses, GetProjectReposData, GetProjectReposErrors, GetProjectReposResponses, GetProjectResponses, GetRepoContributorsData, GetRepoContributorsErrors, GetRepoContributorsResponses, GetRepoData, GetRepoDependsOnData, GetRepoDependsOnErrors, GetRepoDependsOnResponses, GetRepoErrors, GetRepoGithubDependentsData, GetRepoGithubDependentsErrors, GetRepoGithubDependentsResponses, GetRepoHasDependentsData, GetRepoHasDependentsErrors, GetRepoHasDependentsResponses, GetRepoResponses, GetSbomSubmissionData, GetSbomSubmissionErrors, GetSbomSubmissionResponses, HealthData, HealthResponses, IngestSbomData, IngestSbomErrors, IngestSbomResponses, ListContributorsData, ListContributorsErrors, ListContributorsResponses, ListGitlogArtifactsData, ListGitlogArtifactsErrors, ListGitlogArtifactsResponses, ListProjectsData, ListProjectsErrors, ListProjectsResponses, ListReposData, ListReposErrors, ListReposResponses, ListSbomSubmissionsData, ListSbomSubmissionsErrors, ListSbomSubmissionsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -149,6 +149,18 @@ export const getRepoDependsOn = <ThrowOnError extends boolean = false>(options: 
  * type, version range, and confidence level.
  */
 export const getRepoHasDependents = <ThrowOnError extends boolean = false>(options: Options<GetRepoHasDependentsData, ThrowOnError>) => (options.client ?? client).get<GetRepoHasDependentsResponses, GetRepoHasDependentsErrors, ThrowOnError>({ url: '/repos/{canonical_id}/has-dependents', ...options });
+
+/**
+ * Public GitHub dependents observed for a repo
+ *
+ * Active GitHub dependents observations plus freshness/completeness summary.
+ *
+ * Collection/audit data scraped from the public GitHub dependents page.
+ * Deliberately separate from the dependency-graph ``has-dependents``
+ * endpoint: observations are not ``DependsOn`` relationships and feed no
+ * metric. Retired observations are not exposed here.
+ */
+export const getRepoGithubDependents = <ThrowOnError extends boolean = false>(options: Options<GetRepoGithubDependentsData, ThrowOnError>) => (options.client ?? client).get<GetRepoGithubDependentsResponses, GetRepoGithubDependentsErrors, ThrowOnError>({ url: '/repos/{canonical_id}/github-dependents', ...options });
 
 /**
  * Contributors for a repo

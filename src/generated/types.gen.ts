@@ -763,6 +763,68 @@ export type PaginatedResponseProjectContributorSummary = {
 };
 
 /**
+ * PaginatedResponse[GithubDependentObservationItem]
+ */
+export type PaginatedResponseGithubDependentObservationItem = {
+    /**
+     * Items
+     */
+    items: Array<GithubDependentObservationItem>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * GithubDependentObservationItem
+ *
+ * One active GitHub dependent observation for a source repo.
+ */
+export type GithubDependentObservationItem = {
+    /**
+     * Dependent Canonical Id
+     */
+    dependent_canonical_id: string;
+    /**
+     * Dependent Repo Url
+     */
+    dependent_repo_url: string;
+    /**
+     * Observed Owner
+     */
+    observed_owner: string;
+    /**
+     * Observed Repo Name
+     */
+    observed_repo_name: string;
+    /**
+     * Resolved Repo Canonical Id
+     */
+    resolved_repo_canonical_id?: string | null;
+    /**
+     * Package Ids
+     */
+    package_ids?: Array<string> | null;
+    /**
+     * First Seen At
+     */
+    first_seen_at: string;
+    /**
+     * Last Seen At
+     */
+    last_seen_at: string;
+};
+
+/**
  * PaginatedResponse[GitLogArtifactSummary]
  */
 export type PaginatedResponseGitLogArtifactSummary = {
@@ -944,6 +1006,72 @@ export type HttpValidationError = {
      * Detail
      */
     detail?: Array<ValidationError>;
+};
+
+/**
+ * GithubDependentsSummary
+ *
+ * Freshness and completeness summary for a source repo's observations.
+ *
+ * ``observations_as_of`` is the finish time of the latest applied
+ * listing-complete run; ``reported_counts_as_of`` is the finish time of the
+ * latest applied counts-complete run. The two can point to different runs,
+ * so the reported totals always carry their own timestamp. Reported header
+ * totals may exceed the enumerable public entries and, for multi-package
+ * repositories, are per-package sums that can double count a dependent
+ * using several packages.
+ */
+export type GithubDependentsSummary = {
+    /**
+     * Latest Attempt At
+     */
+    latest_attempt_at?: string | null;
+    /**
+     * Latest Attempt Status
+     */
+    latest_attempt_status?: string | null;
+    /**
+     * Latest Attempt Listing Incomplete Reason
+     */
+    latest_attempt_listing_incomplete_reason?: string | null;
+    /**
+     * Latest Attempt Counts Incomplete Reason
+     */
+    latest_attempt_counts_incomplete_reason?: string | null;
+    /**
+     * Observations As Of
+     */
+    observations_as_of?: string | null;
+    /**
+     * Reported Counts As Of
+     */
+    reported_counts_as_of?: string | null;
+    /**
+     * Repos Total Reported
+     */
+    repos_total_reported?: number | null;
+    /**
+     * Packages Total Reported
+     */
+    packages_total_reported?: number | null;
+    /**
+     * Packages Scanned
+     */
+    packages_scanned?: number | null;
+    /**
+     * Active Observations
+     */
+    active_observations?: number;
+};
+
+/**
+ * GithubDependentsResponse
+ *
+ * Summary plus paginated active observations for one source repo.
+ */
+export type GithubDependentsResponse = {
+    summary: GithubDependentsSummary;
+    observations: PaginatedResponseGithubDependentObservationItem;
 };
 
 /**
@@ -1565,6 +1693,49 @@ export type GetRepoHasDependentsResponses = {
 };
 
 export type GetRepoHasDependentsResponse = GetRepoHasDependentsResponses[keyof GetRepoHasDependentsResponses];
+
+export type GetRepoGithubDependentsData = {
+    body?: never;
+    path: {
+        /**
+         * Canonical Id
+         */
+        canonical_id: string;
+    };
+    query?: {
+        /**
+         * Limit
+         *
+         * Maximum number of items to return
+         */
+        limit?: number;
+        /**
+         * Offset
+         *
+         * Number of items to skip
+         */
+        offset?: number;
+    };
+    url: '/repos/{canonical_id}/github-dependents';
+};
+
+export type GetRepoGithubDependentsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetRepoGithubDependentsError = GetRepoGithubDependentsErrors[keyof GetRepoGithubDependentsErrors];
+
+export type GetRepoGithubDependentsResponses = {
+    /**
+     * Successful Response
+     */
+    200: GithubDependentsResponse;
+};
+
+export type GetRepoGithubDependentsResponse = GetRepoGithubDependentsResponses[keyof GetRepoGithubDependentsResponses];
 
 export type GetRepoContributorsData = {
     body?: never;

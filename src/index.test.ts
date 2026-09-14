@@ -124,6 +124,16 @@ describe('PG Atlas SDK generated contract tests', () => {
     }
   },
   {
+    "functionName": "getRepoGithubDependents",
+    "httpMethod": "GET",
+    "expectedPath": "/repos/demo-id/github-dependents",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
     "functionName": "getRepoHasDependents",
     "httpMethod": "GET",
     "expectedPath": "/repos/demo-id/has-dependents",

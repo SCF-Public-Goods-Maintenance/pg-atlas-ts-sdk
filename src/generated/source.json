@@ -7,7 +7,7 @@
       "name": "Mozilla Public License v2.0",
       "identifier": "MPL-2.0"
     },
-    "version": "0.6.0"
+    "version": "0.7.0"
   },
   "paths": {
     "/health": {
@@ -974,6 +974,82 @@
           {
             "lang": "JavaScript",
             "source": "import { getRepoHasDependents } from 'your-package';\n\nawait getRepoHasDependents()"
+          }
+        ]
+      }
+    },
+    "/repos/{canonical_id}/github-dependents": {
+      "get": {
+        "tags": [
+          "Source: PG Atlas"
+        ],
+        "summary": "Public GitHub dependents observed for a repo",
+        "description": "Active GitHub dependents observations plus freshness/completeness summary.\n\nCollection/audit data scraped from the public GitHub dependents page.\nDeliberately separate from the dependency-graph ``has-dependents``\nendpoint: observations are not ``DependsOn`` relationships and feed no\nmetric. Retired observations are not exposed here.",
+        "operationId": "get_repo_github_dependents",
+        "parameters": [
+          {
+            "name": "canonical_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Canonical Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum number of items to return",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of items to skip",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of items to skip"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubDependentsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "import { getRepoGithubDependents } from 'your-package';\n\nawait getRepoGithubDependents()"
           }
         ]
       }
@@ -2710,6 +2786,103 @@
         ],
         "title": "PaginatedResponse[ProjectContributorSummary]"
       },
+      "PaginatedResponse_GithubDependentObservationItem_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GithubDependentObservationItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaginatedResponse[GithubDependentObservationItem]"
+      },
+      "GithubDependentObservationItem": {
+        "properties": {
+          "dependent_canonical_id": {
+            "type": "string",
+            "title": "Dependent Canonical Id"
+          },
+          "dependent_repo_url": {
+            "type": "string",
+            "title": "Dependent Repo Url"
+          },
+          "observed_owner": {
+            "type": "string",
+            "title": "Observed Owner"
+          },
+          "observed_repo_name": {
+            "type": "string",
+            "title": "Observed Repo Name"
+          },
+          "resolved_repo_canonical_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved Repo Canonical Id"
+          },
+          "package_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Ids"
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dependent_canonical_id",
+          "dependent_repo_url",
+          "observed_owner",
+          "observed_repo_name",
+          "first_seen_at",
+          "last_seen_at"
+        ],
+        "title": "GithubDependentObservationItem",
+        "description": "One active GitHub dependent observation for a source repo."
+      },
       "PaginatedResponse_GitLogArtifactSummary_": {
         "properties": {
           "items": {
@@ -2998,6 +3171,137 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "GithubDependentsSummary": {
+        "properties": {
+          "latest_attempt_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Attempt At"
+          },
+          "latest_attempt_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Attempt Status"
+          },
+          "latest_attempt_listing_incomplete_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Attempt Listing Incomplete Reason"
+          },
+          "latest_attempt_counts_incomplete_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Attempt Counts Incomplete Reason"
+          },
+          "observations_as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observations As Of"
+          },
+          "reported_counts_as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reported Counts As Of"
+          },
+          "repos_total_reported": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repos Total Reported"
+          },
+          "packages_total_reported": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packages Total Reported"
+          },
+          "packages_scanned": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packages Scanned"
+          },
+          "active_observations": {
+            "type": "integer",
+            "title": "Active Observations",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "GithubDependentsSummary",
+        "description": "Freshness and completeness summary for a source repo's observations.\n\n``observations_as_of`` is the finish time of the latest applied\nlisting-complete run; ``reported_counts_as_of`` is the finish time of the\nlatest applied counts-complete run. The two can point to different runs,\nso the reported totals always carry their own timestamp. Reported header\ntotals may exceed the enumerable public entries and, for multi-package\nrepositories, are per-package sums that can double count a dependent\nusing several packages."
+      },
+      "GithubDependentsResponse": {
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/GithubDependentsSummary"
+          },
+          "observations": {
+            "$ref": "#/components/schemas/PaginatedResponse_GithubDependentObservationItem_"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "observations"
+        ],
+        "title": "GithubDependentsResponse",
+        "description": "Summary plus paginated active observations for one source repo."
       },
       "GitLogArtifactDetailResponse": {
         "properties": {

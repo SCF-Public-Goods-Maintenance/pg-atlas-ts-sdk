@@ -1333,6 +1333,105 @@ export const PaginatedResponse_ProjectContributorSummary_Schema = {
     title: 'PaginatedResponse[ProjectContributorSummary]'
 } as const;
 
+export const PaginatedResponse_GithubDependentObservationItem_Schema = {
+    properties: {
+        items: {
+            items: {
+                $ref: '#/components/schemas/GithubDependentObservationItem'
+            },
+            type: 'array',
+            title: 'Items'
+        },
+        total: {
+            type: 'integer',
+            title: 'Total'
+        },
+        limit: {
+            type: 'integer',
+            title: 'Limit'
+        },
+        offset: {
+            type: 'integer',
+            title: 'Offset'
+        }
+    },
+    type: 'object',
+    required: [
+        'items',
+        'total',
+        'limit',
+        'offset'
+    ],
+    title: 'PaginatedResponse[GithubDependentObservationItem]'
+} as const;
+
+export const GithubDependentObservationItemSchema = {
+    properties: {
+        dependent_canonical_id: {
+            type: 'string',
+            title: 'Dependent Canonical Id'
+        },
+        dependent_repo_url: {
+            type: 'string',
+            title: 'Dependent Repo Url'
+        },
+        observed_owner: {
+            type: 'string',
+            title: 'Observed Owner'
+        },
+        observed_repo_name: {
+            type: 'string',
+            title: 'Observed Repo Name'
+        },
+        resolved_repo_canonical_id: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Resolved Repo Canonical Id'
+        },
+        package_ids: {
+            anyOf: [
+                {
+                    items: {
+                        type: 'string'
+                    },
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Package Ids'
+        },
+        first_seen_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'First Seen At'
+        },
+        last_seen_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Last Seen At'
+        }
+    },
+    type: 'object',
+    required: [
+        'dependent_canonical_id',
+        'dependent_repo_url',
+        'observed_owner',
+        'observed_repo_name',
+        'first_seen_at',
+        'last_seen_at'
+    ],
+    title: 'GithubDependentObservationItem',
+    description: 'One active GitHub dependent observation for a source repo.'
+} as const;
+
 export const PaginatedResponse_GitLogArtifactSummary_Schema = {
     properties: {
         items: {
@@ -1627,6 +1726,139 @@ export const HTTPValidationErrorSchema = {
     },
     type: 'object',
     title: 'HTTPValidationError'
+} as const;
+
+export const GithubDependentsSummarySchema = {
+    properties: {
+        latest_attempt_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Latest Attempt At'
+        },
+        latest_attempt_status: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Latest Attempt Status'
+        },
+        latest_attempt_listing_incomplete_reason: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Latest Attempt Listing Incomplete Reason'
+        },
+        latest_attempt_counts_incomplete_reason: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Latest Attempt Counts Incomplete Reason'
+        },
+        observations_as_of: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Observations As Of'
+        },
+        reported_counts_as_of: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reported Counts As Of'
+        },
+        repos_total_reported: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Repos Total Reported'
+        },
+        packages_total_reported: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Packages Total Reported'
+        },
+        packages_scanned: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Packages Scanned'
+        },
+        active_observations: {
+            type: 'integer',
+            title: 'Active Observations',
+            default: 0
+        }
+    },
+    type: 'object',
+    title: 'GithubDependentsSummary',
+    description: 'Freshness and completeness summary for a source repo\'s observations.\n\n``observations_as_of`` is the finish time of the latest applied\nlisting-complete run; ``reported_counts_as_of`` is the finish time of the\nlatest applied counts-complete run. The two can point to different runs,\nso the reported totals always carry their own timestamp. Reported header\ntotals may exceed the enumerable public entries and, for multi-package\nrepositories, are per-package sums that can double count a dependent\nusing several packages.'
+} as const;
+
+export const GithubDependentsResponseSchema = {
+    properties: {
+        summary: {
+            $ref: '#/components/schemas/GithubDependentsSummary'
+        },
+        observations: {
+            $ref: '#/components/schemas/PaginatedResponse_GithubDependentObservationItem_'
+        }
+    },
+    type: 'object',
+    required: [
+        'summary',
+        'observations'
+    ],
+    title: 'GithubDependentsResponse',
+    description: 'Summary plus paginated active observations for one source repo.'
 } as const;
 
 export const GitLogArtifactDetailResponseSchema = {
