@@ -11,6 +11,9 @@
   ],
   "author": "PG Atlas Contributors",
   "license": "MIT",
+  "engines": {
+    "node": ">=26.13.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-ts-sdk.git"
@@ -36,11 +39,17 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.95.0",
-    "@types/node": "^25.9.6",
+    "@hey-api/openapi-ts": "^0.99.0",
+    "@types/node": "^26.6.6",
     "typescript": "^6.0.3",
-    "vite": "^8.3.0",
-    "vitest": "^4.1.11"
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
   },
-  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.22.0",
+      "onFail": "download"
+    }
+  }
 }
