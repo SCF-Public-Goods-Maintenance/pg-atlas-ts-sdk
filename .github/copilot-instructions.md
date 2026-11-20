@@ -44,8 +44,8 @@ publishes them to NPM. Manual interventions by devs must be kept to a minimum.
 
 ## Tooling
 
-- Package manager: `pnpm` (lockfile: `pnpm-lock.yaml`).
-- Node runtime in CI: Node 24.
+- Package manager: `pnpm 12.22.0` (lockfile: `pnpm-lock.yaml`).
+- Node runtime in CI: Node 26.13.1.
 - OpenAPI SDK generation: `@hey-api/openapi-ts` via `pnpm run generate`.
 - API update flow: `pnpm run update` (fetch `openapi.json`, sync versions, regenerate SDK).
 - Test regeneration flow: `pnpm run rewrite-tests` (rewrites `src/index.test.ts` from generated SDK metadata).
