@@ -7,7 +7,7 @@
             "name": "Mozilla Public License v2.0",
             "identifier": "MPL-2.0"
         },
-        "version": "0.7.0"
+        "version": "0.8.0"
     },
     "paths": {
         "/health": {
@@ -378,51 +378,6 @@
                 }
             }
         },
-        "/projects/{canonical_id}": {
-            "get": {
-                "tags": [
-                    "Graph: Projects",
-                    "Source: OpenGrants",
-                    "Source: PG Atlas"
-                ],
-                "summary": "Project detail",
-                "description": "Full detail for a single project, including validated metadata.\n\nThe ``metadata`` field is the normalised form of the raw JSONB column —\nunknown keys from the crawler are passed through via ``extra=\"allow\"``.",
-                "operationId": "get_project",
-                "parameters": [
-                    {
-                        "name": "canonical_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "title": "Canonical Id"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProjectDetailResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/HTTPValidationError"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/projects/{canonical_id}/repos": {
             "get": {
                 "tags": [
@@ -664,6 +619,51 @@
                                         "$ref": "#/components/schemas/ProjectDependency"
                                     },
                                     "title": "Response Get Project Has Dependents"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{canonical_id}": {
+            "get": {
+                "tags": [
+                    "Graph: Projects",
+                    "Source: OpenGrants",
+                    "Source: PG Atlas"
+                ],
+                "summary": "Project detail",
+                "description": "Full detail for a single project, including validated metadata.\n\nThe ``metadata`` field is the normalised form of the raw JSONB column —\nunknown keys from the crawler are passed through via ``extra=\"allow\"``.",
+                "operationId": "get_project",
+                "parameters": [
+                    {
+                        "name": "canonical_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Canonical Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProjectDetailResponse"
                                 }
                             }
                         }
@@ -947,6 +947,49 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/GithubDependentsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/repos/{canonical_id}/maintenance-profile": {
+            "get": {
+                "tags": [
+                    "Source: PG Atlas"
+                ],
+                "summary": "Maintenance profile for a repo",
+                "description": "Per-signal maintenance values with coverage states and percentile ranks.\n\nServes the profile written by the gated materializer. Every ranked value\ncarries its coverage state and, when ranked, its percentile and pool\nsize; the profile carries its as-of and the parameters it was computed\nunder. 404 while no profile has been materialized for the repository.",
+                "operationId": "get_repo_maintenance_profile",
+                "parameters": [
+                    {
+                        "name": "canonical_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Canonical Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MaintenanceProfileResponse"
                                 }
                             }
                         }
@@ -1249,10 +1292,10 @@
                                     "type": "null"
                                 }
                             ],
-                            "description": "Filter by repo canonical_id (exact match)",
+                            "description": "Filter by repo canonical_id (case-insensitive)",
                             "title": "Repo"
                         },
-                        "description": "Filter by repo canonical_id (exact match)"
+                        "description": "Filter by repo canonical_id (case-insensitive)"
                     },
                     {
                         "name": "limit",
@@ -1981,6 +2024,49 @@
                 ],
                 "title": "HealthResponse",
                 "description": "Response body for GET /health."
+            },
+            "MaintenanceProfileResponse": {
+                "properties": {
+                    "schema_version": {
+                        "type": "integer",
+                        "title": "Schema Version"
+                    },
+                    "as_of": {
+                        "type": "string",
+                        "title": "As Of"
+                    },
+                    "window_days": {
+                        "type": "integer",
+                        "title": "Window Days"
+                    },
+                    "response_interval_days": {
+                        "type": "integer",
+                        "title": "Response Interval Days"
+                    },
+                    "eligible_population": {
+                        "type": "integer",
+                        "title": "Eligible Population"
+                    },
+                    "signals": {
+                        "additionalProperties": {
+                            "additionalProperties": true,
+                            "type": "object"
+                        },
+                        "type": "object",
+                        "title": "Signals"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "schema_version",
+                    "as_of",
+                    "window_days",
+                    "response_interval_days",
+                    "eligible_population",
+                    "signals"
+                ],
+                "title": "MaintenanceProfileResponse",
+                "description": "Stored maintenance profile for one repo, as materialized."
             },
             "MetadataResponse": {
                 "properties": {
@@ -3097,7 +3183,8 @@
                 "type": "string",
                 "enum": [
                     "repo",
-                    "external-repo"
+                    "external-repo",
+                    "redirect"
                 ],
                 "title": "RepoVertexType",
                 "description": "Discriminator values for the RepoVertex joined-table-inheritance hierarchy."

@@ -5,169 +5,168 @@ export type ClientOptions = {
 };
 
 /**
- * Visibility
+ * ActivityStatus
  *
- * Whether a Repo is publicly accessible (affects data collection scope).
+ * Lifecycle status of a Project.
+ *
+ * Updated by the SCF Impact Survey (yearly) and higher-frequency signals;
+ * see the Activity Status Update Logic in the architecture docs.
  */
-export type Visibility = 'public' | 'private';
+export type ActivityStatus = 'live' | 'in-dev' | 'discontinued' | 'non-responsive';
 
 /**
- * ValidationError
+ * ContributionEntry
+ *
+ * A single repo that a contributor has committed to.
  */
-export type ValidationError = {
+export type ContributionEntry = {
     /**
-     * Location
+     * Repo Canonical Id
      */
-    loc: Array<string | number>;
+    repo_canonical_id: string;
     /**
-     * Message
+     * Repo Display Name
      */
-    msg: string;
+    repo_display_name: string;
     /**
-     * Error Type
+     * Project Canonical Id
      */
-    type: string;
+    project_canonical_id: string | null;
     /**
-     * Input
+     * Number Of Commits
      */
-    input?: unknown;
+    number_of_commits: number;
     /**
-     * Context
+     * First Commit Date
      */
-    ctx?: {
-        [key: string]: unknown;
-    };
+    first_commit_date: string;
+    /**
+     * Last Commit Date
+     */
+    last_commit_date: string;
 };
 
 /**
- * SubmissionStatus
+ * ContributorDetailResponse
  *
- * Processing state of an artifact-linked audit record.
+ * Full contributor detail with aggregated statistics and per-repo activity.
  */
-export type SubmissionStatus = 'pending' | 'processed' | 'failed';
-
-/**
- * ScfSubmission
- *
- * A single SCF funding round submission.
- */
-export type ScfSubmission = {
-    /**
-     * Round
-     */
-    round: string;
-    /**
-     * Title
-     */
-    title: string;
-};
-
-/**
- * SbomSubmissionResponse
- *
- * Full SBOM submission record.
- *
- * Serialised from the ``SbomSubmission`` ORM model.  The ``sbom_content_hash``
- * field is the SHA-256 hex digest of the raw submitted payload.
- */
-export type SbomSubmissionResponse = {
+export type ContributorDetailResponse = {
     /**
      * Id
      */
     id: number;
     /**
-     * Repository Claim
+     * Name
      */
-    repository_claim: string;
+    name: string;
     /**
-     * Actor Claim
+     * Email Hash
      */
-    actor_claim: string;
+    email_hash: string;
     /**
-     * Sbom Content Hash
+     * Total Repos
      */
-    sbom_content_hash: string;
+    total_repos: number;
+    /**
+     * Total Commits
+     */
+    total_commits: number;
+    /**
+     * First Contribution
+     */
+    first_contribution: string | null;
+    /**
+     * Last Contribution
+     */
+    last_contribution: string | null;
+    /**
+     * Repos
+     */
+    repos: Array<ContributionEntry>;
+};
+
+/**
+ * ContributorSummary
+ *
+ * Compact contributor reference embedded in repo detail responses.
+ */
+export type ContributorSummary = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Email Hash
+     */
+    email_hash: string;
+};
+
+/**
+ * DepCounts
+ *
+ * Counts of dependency edges grouped by target vertex type.
+ *
+ * Provided as part of the repo detail response so the frontend can show
+ * "depends on N repos + M external" without fetching the full edge list.
+ */
+export type DepCounts = {
+    /**
+     * Repos
+     */
+    repos: number;
+    /**
+     * External Repos
+     */
+    external_repos: number;
+};
+
+/**
+ * EdgeConfidence
+ *
+ * How firmly an edge was established.
+ */
+export type EdgeConfidence = 'verified-sbom' | 'inferred-shadow';
+
+/**
+ * GitLogArtifactDetailResponse
+ *
+ * Full gitlog artifact audit record including raw artifact content.
+ */
+export type GitLogArtifactDetailResponse = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Repo Id
+     */
+    repo_id: number;
+    /**
+     * Repo Canonical Id
+     */
+    repo_canonical_id: string;
+    /**
+     * Repo Display Name
+     */
+    repo_display_name: string;
     /**
      * Artifact Path
      */
-    artifact_path: string;
+    artifact_path: string | null;
     status: SubmissionStatus;
     /**
      * Error Detail
      */
     error_detail: string | null;
     /**
-     * Submitted At
+     * Since Months
      */
-    submitted_at: string;
-    /**
-     * Processed At
-     */
-    processed_at: string | null;
-};
-
-/**
- * SbomSubmissionListResponse
- *
- * Paginated list of SBOM submission records.
- *
- * Returned by the list endpoint with ``total`` reflecting the count after
- * any ``repository`` filter has been applied.
- */
-export type SbomSubmissionListResponse = {
-    /**
-     * Items
-     */
-    items: Array<SbomSubmissionResponse>;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Limit
-     */
-    limit: number;
-    /**
-     * Offset
-     */
-    offset: number;
-};
-
-/**
- * SbomSubmissionDetailResponse
- *
- * Extended SBOM submission record with the raw artifact content.
- *
- * Returned by the detail endpoint.  ``raw_artifact`` contains the full JSON
- * text of the stored SBOM, or ``None`` if the artifact file is missing from
- * the store.
- */
-export type SbomSubmissionDetailResponse = {
-    /**
-     * Id
-     */
-    id: number;
-    /**
-     * Repository Claim
-     */
-    repository_claim: string;
-    /**
-     * Actor Claim
-     */
-    actor_claim: string;
-    /**
-     * Sbom Content Hash
-     */
-    sbom_content_hash: string;
-    /**
-     * Artifact Path
-     */
-    artifact_path: string;
-    status: SubmissionStatus;
-    /**
-     * Error Detail
-     */
-    error_detail: string | null;
+    since_months: number;
     /**
      * Submitted At
      */
@@ -183,39 +182,487 @@ export type SbomSubmissionDetailResponse = {
 };
 
 /**
- * SbomAcceptedResponse
+ * GitLogArtifactSummary
  *
- * Response body returned on successful SBOM submission (202 Accepted).
+ * Compact gitlog artifact audit record for list endpoints.
  */
-export type SbomAcceptedResponse = {
+export type GitLogArtifactSummary = {
     /**
-     * Message
+     * Id
      */
-    message: string;
+    id: number;
     /**
-     * Repository
+     * Repo Id
      */
-    repository: string;
+    repo_id: number;
     /**
-     * Package Count
+     * Repo Canonical Id
      */
-    package_count: number;
+    repo_canonical_id: string;
+    /**
+     * Repo Display Name
+     */
+    repo_display_name: string;
+    /**
+     * Artifact Path
+     */
+    artifact_path: string | null;
+    status: SubmissionStatus;
+    /**
+     * Error Detail
+     */
+    error_detail: string | null;
+    /**
+     * Since Months
+     */
+    since_months: number;
+    /**
+     * Submitted At
+     */
+    submitted_at: string;
+    /**
+     * Processed At
+     */
+    processed_at: string | null;
 };
 
 /**
- * RepoVertexType
+ * GithubDependentObservationItem
  *
- * Discriminator values for the RepoVertex joined-table-inheritance hierarchy.
+ * One active GitHub dependent observation for a source repo.
  */
-export type RepoVertexType = 'repo' | 'external-repo';
+export type GithubDependentObservationItem = {
+    /**
+     * Dependent Canonical Id
+     */
+    dependent_canonical_id: string;
+    /**
+     * Dependent Repo Url
+     */
+    dependent_repo_url: string;
+    /**
+     * Observed Owner
+     */
+    observed_owner: string;
+    /**
+     * Observed Repo Name
+     */
+    observed_repo_name: string;
+    /**
+     * Resolved Repo Canonical Id
+     */
+    resolved_repo_canonical_id?: string | null;
+    /**
+     * Package Ids
+     */
+    package_ids?: Array<string> | null;
+    /**
+     * First Seen At
+     */
+    first_seen_at: string;
+    /**
+     * Last Seen At
+     */
+    last_seen_at: string;
+};
 
 /**
- * RepoSummary
+ * GithubDependentsResponse
  *
- * Compact repo representation used in list endpoints and as an embedded
- * reference in project detail responses.
+ * Summary plus paginated active observations for one source repo.
  */
-export type RepoSummary = {
+export type GithubDependentsResponse = {
+    summary: GithubDependentsSummary;
+    observations: PaginatedResponseGithubDependentObservationItem;
+};
+
+/**
+ * GithubDependentsSummary
+ *
+ * Freshness and completeness summary for a source repo's observations.
+ *
+ * ``observations_as_of`` is the finish time of the latest applied
+ * listing-complete run; ``reported_counts_as_of`` is the finish time of the
+ * latest applied counts-complete run. The two can point to different runs,
+ * so the reported totals always carry their own timestamp. Reported header
+ * totals may exceed the enumerable public entries and, for multi-package
+ * repositories, are per-package sums that can double count a dependent
+ * using several packages.
+ */
+export type GithubDependentsSummary = {
+    /**
+     * Latest Attempt At
+     */
+    latest_attempt_at?: string | null;
+    /**
+     * Latest Attempt Status
+     */
+    latest_attempt_status?: string | null;
+    /**
+     * Latest Attempt Listing Incomplete Reason
+     */
+    latest_attempt_listing_incomplete_reason?: string | null;
+    /**
+     * Latest Attempt Counts Incomplete Reason
+     */
+    latest_attempt_counts_incomplete_reason?: string | null;
+    /**
+     * Observations As Of
+     */
+    observations_as_of?: string | null;
+    /**
+     * Reported Counts As Of
+     */
+    reported_counts_as_of?: string | null;
+    /**
+     * Repos Total Reported
+     */
+    repos_total_reported?: number | null;
+    /**
+     * Packages Total Reported
+     */
+    packages_total_reported?: number | null;
+    /**
+     * Packages Scanned
+     */
+    packages_scanned?: number | null;
+    /**
+     * Active Observations
+     */
+    active_observations?: number;
+};
+
+/**
+ * HTTPValidationError
+ */
+export type HttpValidationError = {
+    /**
+     * Detail
+     */
+    detail?: Array<ValidationError>;
+};
+
+/**
+ * HealthComponents
+ *
+ * Component-level readiness details for GET /health.
+ */
+export type HealthComponents = {
+    /**
+     * Artifact Store
+     */
+    artifact_store: 'local' | 'IPFS';
+    /**
+     * Database
+     */
+    database: 'ready' | 'not-configured';
+    /**
+     * Schema Version
+     */
+    schema_version: string | null;
+};
+
+/**
+ * HealthResponse
+ *
+ * Response body for GET /health.
+ */
+export type HealthResponse = {
+    /**
+     * Status
+     */
+    status: 'live' | 'ready';
+    /**
+     * Version
+     */
+    version: string;
+    components: HealthComponents;
+};
+
+/**
+ * MaintenanceProfileResponse
+ *
+ * Stored maintenance profile for one repo, as materialized.
+ */
+export type MaintenanceProfileResponse = {
+    /**
+     * Schema Version
+     */
+    schema_version: number;
+    /**
+     * As Of
+     */
+    as_of: string;
+    /**
+     * Window Days
+     */
+    window_days: number;
+    /**
+     * Response Interval Days
+     */
+    response_interval_days: number;
+    /**
+     * Eligible Population
+     */
+    eligible_population: number;
+    /**
+     * Signals
+     */
+    signals: {
+        [key: string]: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+/**
+ * MetadataResponse
+ *
+ * Ecosystem-wide summary statistics returned by ``GET /metadata``.
+ */
+export type MetadataResponse = {
+    /**
+     * Total Projects
+     */
+    total_projects: number;
+    /**
+     * Active Projects
+     */
+    active_projects: number;
+    /**
+     * Total Repos
+     */
+    total_repos: number;
+    /**
+     * Active Repos 90D
+     */
+    active_repos_90d: number;
+    /**
+     * Total External Repos
+     */
+    total_external_repos: number;
+    /**
+     * Total Dependency Edges
+     */
+    total_dependency_edges: number;
+    /**
+     * Total Contributor Edges
+     */
+    total_contributor_edges: number;
+    /**
+     * Active Contributors 30D
+     */
+    active_contributors_30d: number;
+    /**
+     * Active Contributors 90D
+     */
+    active_contributors_90d: number;
+    /**
+     * Last Updated
+     */
+    last_updated: string | null;
+};
+
+/**
+ * PaginatedResponse[ContributorSummary]
+ */
+export type PaginatedResponseContributorSummary = {
+    /**
+     * Items
+     */
+    items: Array<ContributorSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * PaginatedResponse[GitLogArtifactSummary]
+ */
+export type PaginatedResponseGitLogArtifactSummary = {
+    /**
+     * Items
+     */
+    items: Array<GitLogArtifactSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * PaginatedResponse[GithubDependentObservationItem]
+ */
+export type PaginatedResponseGithubDependentObservationItem = {
+    /**
+     * Items
+     */
+    items: Array<GithubDependentObservationItem>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * PaginatedResponse[ProjectContributorSummary]
+ */
+export type PaginatedResponseProjectContributorSummary = {
+    /**
+     * Items
+     */
+    items: Array<ProjectContributorSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * PaginatedResponse[ProjectSummary]
+ */
+export type PaginatedResponseProjectSummary = {
+    /**
+     * Items
+     */
+    items: Array<ProjectSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * PaginatedResponse[RepoContributorSummary]
+ */
+export type PaginatedResponseRepoContributorSummary = {
+    /**
+     * Items
+     */
+    items: Array<RepoContributorSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * PaginatedResponse[RepoSummary]
+ */
+export type PaginatedResponseRepoSummary = {
+    /**
+     * Items
+     */
+    items: Array<RepoSummary>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * ProjectContributorSummary
+ *
+ * Contributor summary aggregated across all repos in a project.
+ */
+export type ProjectContributorSummary = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Email Hash
+     */
+    email_hash: string;
+    /**
+     * Total Commits In Project
+     */
+    total_commits_in_project: number;
+};
+
+/**
+ * ProjectDependency
+ *
+ * A collapsed project-level dependency: aggregates repo-level edges
+ * between two projects into a single summary.
+ */
+export type ProjectDependency = {
+    project: ProjectSummary;
+    /**
+     * Edge Count
+     */
+    edge_count: number;
+};
+
+/**
+ * ProjectDetailResponse
+ *
+ * Full project detail including contributor stats and metadata.
+ *
+ * ``metadata`` is the normalised form of the ``project_metadata`` JSONB column.
+ */
+export type ProjectDetailResponse = {
     /**
      * Canonical Id
      */
@@ -224,23 +671,16 @@ export type RepoSummary = {
      * Display Name
      */
     display_name: string;
-    visibility: Visibility;
+    project_type: ProjectType;
+    activity_status: ActivityStatus;
     /**
-     * Latest Version
+     * Category
      */
-    latest_version: string;
+    category: string | null;
     /**
-     * Latest Commit Date
+     * Git Owner Url
      */
-    latest_commit_date: string | null;
-    /**
-     * Repo Url
-     */
-    repo_url: string | null;
-    /**
-     * Project Id
-     */
-    project_id: number | null;
+    git_owner_url: string | null;
     /**
      * Pony Factor
      */
@@ -250,21 +690,201 @@ export type RepoSummary = {
      */
     criticality_score: number | null;
     /**
-     * Adoption Downloads
+     * Adoption Score
      */
-    adoption_downloads: number | null;
-    /**
-     * Adoption Stars
-     */
-    adoption_stars: number | null;
-    /**
-     * Adoption Forks
-     */
-    adoption_forks: number | null;
+    adoption_score: number | null;
     /**
      * Updated At
      */
     updated_at: string;
+    /**
+     * Project Id
+     */
+    project_id: number;
+    /**
+     * Active Contributors 30D
+     */
+    active_contributors_30d: number;
+    /**
+     * Active Contributors 90D
+     */
+    active_contributors_90d: number;
+    metadata: ProjectMetadata;
+};
+
+/**
+ * ProjectMetadata
+ *
+ * Validates and normalises the ``project_metadata`` JSONB column on ``Project``.
+ *
+ * The single write path (``_build_project_metadata`` in the OpenGrants crawler)
+ * guarantees consistent key names and types.  ``extra = "allow"`` ensures that
+ * any future keys added by the crawler pass through without breaking the API.
+ * Future keys must still be added in this model for clarity.
+ */
+export type ProjectMetadata = {
+    /**
+     * Scf Submissions
+     */
+    scf_submissions?: Array<ScfSubmission>;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Technical Architecture
+     */
+    technical_architecture?: string | null;
+    /**
+     * Scf Tranche Completion
+     */
+    scf_tranche_completion?: string | null;
+    /**
+     * Website
+     */
+    website?: string | null;
+    /**
+     * X Profile
+     */
+    x_profile?: string | null;
+    /**
+     * Total Awarded Usd
+     */
+    total_awarded_usd?: number | number | null;
+    /**
+     * Total Paid Usd
+     */
+    total_paid_usd?: number | number | null;
+    /**
+     * Awarded Submissions Count
+     */
+    awarded_submissions_count?: number | null;
+    /**
+     * Open Source
+     */
+    open_source?: boolean | null;
+    /**
+     * Socials
+     */
+    socials?: Array<{
+        [key: string]: unknown;
+    }> | null;
+    /**
+     * Analytics
+     */
+    analytics?: unknown | null;
+    /**
+     * Regions Of Operation
+     */
+    regions_of_operation?: unknown | null;
+    [key: string]: unknown;
+};
+
+/**
+ * ProjectSummary
+ *
+ * Compact project representation used in list endpoints and as an embedded
+ * reference in repo detail responses.
+ */
+export type ProjectSummary = {
+    /**
+     * Canonical Id
+     */
+    canonical_id: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    project_type: ProjectType;
+    activity_status: ActivityStatus;
+    /**
+     * Category
+     */
+    category: string | null;
+    /**
+     * Git Owner Url
+     */
+    git_owner_url: string | null;
+    /**
+     * Pony Factor
+     */
+    pony_factor: number | null;
+    /**
+     * Criticality Score
+     */
+    criticality_score: number | null;
+    /**
+     * Adoption Score
+     */
+    adoption_score: number | null;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * ProjectType
+ *
+ * Classification of a Project within the PG Atlas universe.
+ */
+export type ProjectType = 'public-good' | 'scf-project';
+
+/**
+ * RepoContributorSummary
+ *
+ * Contributor summary with commit counts for one repo.
+ */
+export type RepoContributorSummary = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Email Hash
+     */
+    email_hash: string;
+    /**
+     * Number Of Commits
+     */
+    number_of_commits: number;
+    /**
+     * First Commit Date
+     */
+    first_commit_date: string;
+    /**
+     * Last Commit Date
+     */
+    last_commit_date: string;
+};
+
+/**
+ * RepoDependency
+ *
+ * A single dependency or reverse-dependency edge from a repo.
+ *
+ * ``vertex_type`` tells the frontend whether the target is an in-ecosystem
+ * ``Repo`` or an ``ExternalRepo``.
+ */
+export type RepoDependency = {
+    /**
+     * Canonical Id
+     */
+    canonical_id: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    vertex_type: RepoVertexType;
+    /**
+     * Version Range
+     */
+    version_range: string | null;
+    confidence: EdgeConfidence;
 };
 
 /**
@@ -349,68 +969,12 @@ export type RepoDetailResponse = {
 };
 
 /**
- * DepCounts
+ * RepoSummary
  *
- * Counts of dependency edges grouped by target vertex type.
- *
- * Provided as part of the repo detail response so the frontend can show
- * "depends on N repos + M external" without fetching the full edge list.
+ * Compact repo representation used in list endpoints and as an embedded
+ * reference in project detail responses.
  */
-export type DepCounts = {
-    /**
-     * Repos
-     */
-    repos: number;
-    /**
-     * External Repos
-     */
-    external_repos: number;
-};
-
-/**
- * ContributorSummary
- *
- * Compact contributor reference embedded in repo detail responses.
- */
-export type ContributorSummary = {
-    /**
-     * Id
-     */
-    id: number;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Email Hash
-     */
-    email_hash: string;
-};
-
-/**
- * ActivityStatus
- *
- * Lifecycle status of a Project.
- *
- * Updated by the SCF Impact Survey (yearly) and higher-frequency signals;
- * see the Activity Status Update Logic in the architecture docs.
- */
-export type ActivityStatus = 'live' | 'in-dev' | 'discontinued' | 'non-responsive';
-
-/**
- * ProjectType
- *
- * Classification of a Project within the PG Atlas universe.
- */
-export type ProjectType = 'public-good' | 'scf-project';
-
-/**
- * ProjectSummary
- *
- * Compact project representation used in list endpoints and as an embedded
- * reference in repo detail responses.
- */
-export type ProjectSummary = {
+export type RepoSummary = {
     /**
      * Canonical Id
      */
@@ -419,696 +983,111 @@ export type ProjectSummary = {
      * Display Name
      */
     display_name: string;
-    project_type: ProjectType;
-    activity_status: ActivityStatus;
+    visibility: Visibility;
     /**
-     * Category
+     * Latest Version
      */
-    category: string | null;
+    latest_version: string;
     /**
-     * Git Owner Url
+     * Latest Commit Date
      */
-    git_owner_url: string | null;
+    latest_commit_date: string | null;
     /**
-     * Pony Factor
+     * Repo Url
      */
-    pony_factor: number | null;
-    /**
-     * Criticality Score
-     */
-    criticality_score: number | null;
-    /**
-     * Adoption Score
-     */
-    adoption_score: number | null;
-    /**
-     * Updated At
-     */
-    updated_at: string;
-};
-
-/**
- * RepoDependency
- *
- * A single dependency or reverse-dependency edge from a repo.
- *
- * ``vertex_type`` tells the frontend whether the target is an in-ecosystem
- * ``Repo`` or an ``ExternalRepo``.
- */
-export type RepoDependency = {
-    /**
-     * Canonical Id
-     */
-    canonical_id: string;
-    /**
-     * Display Name
-     */
-    display_name: string;
-    vertex_type: RepoVertexType;
-    /**
-     * Version Range
-     */
-    version_range: string | null;
-    confidence: EdgeConfidence;
-};
-
-/**
- * EdgeConfidence
- *
- * How firmly an edge was established.
- */
-export type EdgeConfidence = 'verified-sbom' | 'inferred-shadow';
-
-/**
- * RepoContributorSummary
- *
- * Contributor summary with commit counts for one repo.
- */
-export type RepoContributorSummary = {
-    /**
-     * Id
-     */
-    id: number;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Email Hash
-     */
-    email_hash: string;
-    /**
-     * Number Of Commits
-     */
-    number_of_commits: number;
-    /**
-     * First Commit Date
-     */
-    first_commit_date: string;
-    /**
-     * Last Commit Date
-     */
-    last_commit_date: string;
-};
-
-/**
- * ProjectMetadata
- *
- * Validates and normalises the ``project_metadata`` JSONB column on ``Project``.
- *
- * The single write path (``_build_project_metadata`` in the OpenGrants crawler)
- * guarantees consistent key names and types.  ``extra = "allow"`` ensures that
- * any future keys added by the crawler pass through without breaking the API.
- * Future keys must still be added in this model for clarity.
- */
-export type ProjectMetadata = {
-    /**
-     * Scf Submissions
-     */
-    scf_submissions?: Array<ScfSubmission>;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Technical Architecture
-     */
-    technical_architecture?: string | null;
-    /**
-     * Scf Tranche Completion
-     */
-    scf_tranche_completion?: string | null;
-    /**
-     * Website
-     */
-    website?: string | null;
-    /**
-     * X Profile
-     */
-    x_profile?: string | null;
-    /**
-     * Total Awarded Usd
-     */
-    total_awarded_usd?: number | number | null;
-    /**
-     * Total Paid Usd
-     */
-    total_paid_usd?: number | number | null;
-    /**
-     * Awarded Submissions Count
-     */
-    awarded_submissions_count?: number | null;
-    /**
-     * Open Source
-     */
-    open_source?: boolean | null;
-    /**
-     * Socials
-     */
-    socials?: Array<{
-        [key: string]: unknown;
-    }> | null;
-    /**
-     * Analytics
-     */
-    analytics?: unknown | null;
-    /**
-     * Regions Of Operation
-     */
-    regions_of_operation?: unknown | null;
-    [key: string]: unknown;
-};
-
-/**
- * ProjectDetailResponse
- *
- * Full project detail including contributor stats and metadata.
- *
- * ``metadata`` is the normalised form of the ``project_metadata`` JSONB column.
- */
-export type ProjectDetailResponse = {
-    /**
-     * Canonical Id
-     */
-    canonical_id: string;
-    /**
-     * Display Name
-     */
-    display_name: string;
-    project_type: ProjectType;
-    activity_status: ActivityStatus;
-    /**
-     * Category
-     */
-    category: string | null;
-    /**
-     * Git Owner Url
-     */
-    git_owner_url: string | null;
-    /**
-     * Pony Factor
-     */
-    pony_factor: number | null;
-    /**
-     * Criticality Score
-     */
-    criticality_score: number | null;
-    /**
-     * Adoption Score
-     */
-    adoption_score: number | null;
-    /**
-     * Updated At
-     */
-    updated_at: string;
+    repo_url: string | null;
     /**
      * Project Id
      */
-    project_id: number;
+    project_id: number | null;
     /**
-     * Active Contributors 30D
+     * Pony Factor
      */
-    active_contributors_30d: number;
+    pony_factor: number | null;
     /**
-     * Active Contributors 90D
+     * Criticality Score
      */
-    active_contributors_90d: number;
-    metadata: ProjectMetadata;
+    criticality_score: number | null;
+    /**
+     * Adoption Downloads
+     */
+    adoption_downloads: number | null;
+    /**
+     * Adoption Stars
+     */
+    adoption_stars: number | null;
+    /**
+     * Adoption Forks
+     */
+    adoption_forks: number | null;
+    /**
+     * Updated At
+     */
+    updated_at: string;
 };
 
 /**
- * ProjectDependency
+ * RepoVertexType
  *
- * A collapsed project-level dependency: aggregates repo-level edges
- * between two projects into a single summary.
+ * Discriminator values for the RepoVertex joined-table-inheritance hierarchy.
  */
-export type ProjectDependency = {
-    project: ProjectSummary;
+export type RepoVertexType = 'repo' | 'external-repo' | 'redirect';
+
+/**
+ * SbomAcceptedResponse
+ *
+ * Response body returned on successful SBOM submission (202 Accepted).
+ */
+export type SbomAcceptedResponse = {
     /**
-     * Edge Count
+     * Message
      */
-    edge_count: number;
+    message: string;
+    /**
+     * Repository
+     */
+    repository: string;
+    /**
+     * Package Count
+     */
+    package_count: number;
 };
 
 /**
- * ProjectContributorSummary
+ * SbomSubmissionDetailResponse
  *
- * Contributor summary aggregated across all repos in a project.
+ * Extended SBOM submission record with the raw artifact content.
+ *
+ * Returned by the detail endpoint.  ``raw_artifact`` contains the full JSON
+ * text of the stored SBOM, or ``None`` if the artifact file is missing from
+ * the store.
  */
-export type ProjectContributorSummary = {
+export type SbomSubmissionDetailResponse = {
     /**
      * Id
      */
     id: number;
     /**
-     * Name
+     * Repository Claim
      */
-    name: string;
+    repository_claim: string;
     /**
-     * Email Hash
+     * Actor Claim
      */
-    email_hash: string;
+    actor_claim: string;
     /**
-     * Total Commits In Project
+     * Sbom Content Hash
      */
-    total_commits_in_project: number;
-};
-
-/**
- * PaginatedResponse[RepoSummary]
- */
-export type PaginatedResponseRepoSummary = {
-    /**
-     * Items
-     */
-    items: Array<RepoSummary>;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Limit
-     */
-    limit: number;
-    /**
-     * Offset
-     */
-    offset: number;
-};
-
-/**
- * PaginatedResponse[RepoContributorSummary]
- */
-export type PaginatedResponseRepoContributorSummary = {
-    /**
-     * Items
-     */
-    items: Array<RepoContributorSummary>;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Limit
-     */
-    limit: number;
-    /**
-     * Offset
-     */
-    offset: number;
-};
-
-/**
- * PaginatedResponse[ProjectSummary]
- */
-export type PaginatedResponseProjectSummary = {
-    /**
-     * Items
-     */
-    items: Array<ProjectSummary>;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Limit
-     */
-    limit: number;
-    /**
-     * Offset
-     */
-    offset: number;
-};
-
-/**
- * PaginatedResponse[ProjectContributorSummary]
- */
-export type PaginatedResponseProjectContributorSummary = {
-    /**
-     * Items
-     */
-    items: Array<ProjectContributorSummary>;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Limit
-     */
-    limit: number;
-    /**
-     * Offset
-     */
-    offset: number;
-};
-
-/**
- * PaginatedResponse[GithubDependentObservationItem]
- */
-export type PaginatedResponseGithubDependentObservationItem = {
-    /**
-     * Items
-     */
-    items: Array<GithubDependentObservationItem>;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Limit
-     */
-    limit: number;
-    /**
-     * Offset
-     */
-    offset: number;
-};
-
-/**
- * GithubDependentObservationItem
- *
- * One active GitHub dependent observation for a source repo.
- */
-export type GithubDependentObservationItem = {
-    /**
-     * Dependent Canonical Id
-     */
-    dependent_canonical_id: string;
-    /**
-     * Dependent Repo Url
-     */
-    dependent_repo_url: string;
-    /**
-     * Observed Owner
-     */
-    observed_owner: string;
-    /**
-     * Observed Repo Name
-     */
-    observed_repo_name: string;
-    /**
-     * Resolved Repo Canonical Id
-     */
-    resolved_repo_canonical_id?: string | null;
-    /**
-     * Package Ids
-     */
-    package_ids?: Array<string> | null;
-    /**
-     * First Seen At
-     */
-    first_seen_at: string;
-    /**
-     * Last Seen At
-     */
-    last_seen_at: string;
-};
-
-/**
- * PaginatedResponse[GitLogArtifactSummary]
- */
-export type PaginatedResponseGitLogArtifactSummary = {
-    /**
-     * Items
-     */
-    items: Array<GitLogArtifactSummary>;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Limit
-     */
-    limit: number;
-    /**
-     * Offset
-     */
-    offset: number;
-};
-
-/**
- * GitLogArtifactSummary
- *
- * Compact gitlog artifact audit record for list endpoints.
- */
-export type GitLogArtifactSummary = {
-    /**
-     * Id
-     */
-    id: number;
-    /**
-     * Repo Id
-     */
-    repo_id: number;
-    /**
-     * Repo Canonical Id
-     */
-    repo_canonical_id: string;
-    /**
-     * Repo Display Name
-     */
-    repo_display_name: string;
+    sbom_content_hash: string;
     /**
      * Artifact Path
      */
-    artifact_path: string | null;
+    artifact_path: string;
     status: SubmissionStatus;
     /**
      * Error Detail
      */
     error_detail: string | null;
-    /**
-     * Since Months
-     */
-    since_months: number;
-    /**
-     * Submitted At
-     */
-    submitted_at: string;
-    /**
-     * Processed At
-     */
-    processed_at: string | null;
-};
-
-/**
- * PaginatedResponse[ContributorSummary]
- */
-export type PaginatedResponseContributorSummary = {
-    /**
-     * Items
-     */
-    items: Array<ContributorSummary>;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Limit
-     */
-    limit: number;
-    /**
-     * Offset
-     */
-    offset: number;
-};
-
-/**
- * MetadataResponse
- *
- * Ecosystem-wide summary statistics returned by ``GET /metadata``.
- */
-export type MetadataResponse = {
-    /**
-     * Total Projects
-     */
-    total_projects: number;
-    /**
-     * Active Projects
-     */
-    active_projects: number;
-    /**
-     * Total Repos
-     */
-    total_repos: number;
-    /**
-     * Active Repos 90D
-     */
-    active_repos_90d: number;
-    /**
-     * Total External Repos
-     */
-    total_external_repos: number;
-    /**
-     * Total Dependency Edges
-     */
-    total_dependency_edges: number;
-    /**
-     * Total Contributor Edges
-     */
-    total_contributor_edges: number;
-    /**
-     * Active Contributors 30D
-     */
-    active_contributors_30d: number;
-    /**
-     * Active Contributors 90D
-     */
-    active_contributors_90d: number;
-    /**
-     * Last Updated
-     */
-    last_updated: string | null;
-};
-
-/**
- * HealthResponse
- *
- * Response body for GET /health.
- */
-export type HealthResponse = {
-    /**
-     * Status
-     */
-    status: 'live' | 'ready';
-    /**
-     * Version
-     */
-    version: string;
-    components: HealthComponents;
-};
-
-/**
- * HealthComponents
- *
- * Component-level readiness details for GET /health.
- */
-export type HealthComponents = {
-    /**
-     * Artifact Store
-     */
-    artifact_store: 'local' | 'IPFS';
-    /**
-     * Database
-     */
-    database: 'ready' | 'not-configured';
-    /**
-     * Schema Version
-     */
-    schema_version: string | null;
-};
-
-/**
- * HTTPValidationError
- */
-export type HttpValidationError = {
-    /**
-     * Detail
-     */
-    detail?: Array<ValidationError>;
-};
-
-/**
- * GithubDependentsSummary
- *
- * Freshness and completeness summary for a source repo's observations.
- *
- * ``observations_as_of`` is the finish time of the latest applied
- * listing-complete run; ``reported_counts_as_of`` is the finish time of the
- * latest applied counts-complete run. The two can point to different runs,
- * so the reported totals always carry their own timestamp. Reported header
- * totals may exceed the enumerable public entries and, for multi-package
- * repositories, are per-package sums that can double count a dependent
- * using several packages.
- */
-export type GithubDependentsSummary = {
-    /**
-     * Latest Attempt At
-     */
-    latest_attempt_at?: string | null;
-    /**
-     * Latest Attempt Status
-     */
-    latest_attempt_status?: string | null;
-    /**
-     * Latest Attempt Listing Incomplete Reason
-     */
-    latest_attempt_listing_incomplete_reason?: string | null;
-    /**
-     * Latest Attempt Counts Incomplete Reason
-     */
-    latest_attempt_counts_incomplete_reason?: string | null;
-    /**
-     * Observations As Of
-     */
-    observations_as_of?: string | null;
-    /**
-     * Reported Counts As Of
-     */
-    reported_counts_as_of?: string | null;
-    /**
-     * Repos Total Reported
-     */
-    repos_total_reported?: number | null;
-    /**
-     * Packages Total Reported
-     */
-    packages_total_reported?: number | null;
-    /**
-     * Packages Scanned
-     */
-    packages_scanned?: number | null;
-    /**
-     * Active Observations
-     */
-    active_observations?: number;
-};
-
-/**
- * GithubDependentsResponse
- *
- * Summary plus paginated active observations for one source repo.
- */
-export type GithubDependentsResponse = {
-    summary: GithubDependentsSummary;
-    observations: PaginatedResponseGithubDependentObservationItem;
-};
-
-/**
- * GitLogArtifactDetailResponse
- *
- * Full gitlog artifact audit record including raw artifact content.
- */
-export type GitLogArtifactDetailResponse = {
-    /**
-     * Id
-     */
-    id: number;
-    /**
-     * Repo Id
-     */
-    repo_id: number;
-    /**
-     * Repo Canonical Id
-     */
-    repo_canonical_id: string;
-    /**
-     * Repo Display Name
-     */
-    repo_display_name: string;
-    /**
-     * Artifact Path
-     */
-    artifact_path: string | null;
-    status: SubmissionStatus;
-    /**
-     * Error Detail
-     */
-    error_detail: string | null;
-    /**
-     * Since Months
-     */
-    since_months: number;
     /**
      * Submitted At
      */
@@ -1124,76 +1103,133 @@ export type GitLogArtifactDetailResponse = {
 };
 
 /**
- * ContributorDetailResponse
+ * SbomSubmissionListResponse
  *
- * Full contributor detail with aggregated statistics and per-repo activity.
+ * Paginated list of SBOM submission records.
+ *
+ * Returned by the list endpoint with ``total`` reflecting the count after
+ * any ``repository`` filter has been applied.
  */
-export type ContributorDetailResponse = {
+export type SbomSubmissionListResponse = {
+    /**
+     * Items
+     */
+    items: Array<SbomSubmissionResponse>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
+};
+
+/**
+ * SbomSubmissionResponse
+ *
+ * Full SBOM submission record.
+ *
+ * Serialised from the ``SbomSubmission`` ORM model.  The ``sbom_content_hash``
+ * field is the SHA-256 hex digest of the raw submitted payload.
+ */
+export type SbomSubmissionResponse = {
     /**
      * Id
      */
     id: number;
     /**
-     * Name
+     * Repository Claim
      */
-    name: string;
+    repository_claim: string;
     /**
-     * Email Hash
+     * Actor Claim
      */
-    email_hash: string;
+    actor_claim: string;
     /**
-     * Total Repos
+     * Sbom Content Hash
      */
-    total_repos: number;
+    sbom_content_hash: string;
     /**
-     * Total Commits
+     * Artifact Path
      */
-    total_commits: number;
+    artifact_path: string;
+    status: SubmissionStatus;
     /**
-     * First Contribution
+     * Error Detail
      */
-    first_contribution: string | null;
+    error_detail: string | null;
     /**
-     * Last Contribution
+     * Submitted At
      */
-    last_contribution: string | null;
+    submitted_at: string;
     /**
-     * Repos
+     * Processed At
      */
-    repos: Array<ContributionEntry>;
+    processed_at: string | null;
 };
 
 /**
- * ContributionEntry
+ * ScfSubmission
  *
- * A single repo that a contributor has committed to.
+ * A single SCF funding round submission.
  */
-export type ContributionEntry = {
+export type ScfSubmission = {
     /**
-     * Repo Canonical Id
+     * Round
      */
-    repo_canonical_id: string;
+    round: string;
     /**
-     * Repo Display Name
+     * Title
      */
-    repo_display_name: string;
-    /**
-     * Project Canonical Id
-     */
-    project_canonical_id: string | null;
-    /**
-     * Number Of Commits
-     */
-    number_of_commits: number;
-    /**
-     * First Commit Date
-     */
-    first_commit_date: string;
-    /**
-     * Last Commit Date
-     */
-    last_commit_date: string;
+    title: string;
 };
+
+/**
+ * SubmissionStatus
+ *
+ * Processing state of an artifact-linked audit record.
+ */
+export type SubmissionStatus = 'pending' | 'processed' | 'failed';
+
+/**
+ * ValidationError
+ */
+export type ValidationError = {
+    /**
+     * Location
+     */
+    loc: Array<string | number>;
+    /**
+     * Message
+     */
+    msg: string;
+    /**
+     * Error Type
+     */
+    type: string;
+    /**
+     * Input
+     */
+    input?: unknown;
+    /**
+     * Context
+     */
+    ctx?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * Visibility
+ *
+ * Whether a Repo is publicly accessible (affects data collection scope).
+ */
+export type Visibility = 'public' | 'private';
 
 export type HealthData = {
     body?: never;
@@ -1394,36 +1430,6 @@ export type ListProjectsResponses = {
 
 export type ListProjectsResponse = ListProjectsResponses[keyof ListProjectsResponses];
 
-export type GetProjectData = {
-    body?: never;
-    path: {
-        /**
-         * Canonical Id
-         */
-        canonical_id: string;
-    };
-    query?: never;
-    url: '/projects/{canonical_id}';
-};
-
-export type GetProjectErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
-
-export type GetProjectResponses = {
-    /**
-     * Successful Response
-     */
-    200: ProjectDetailResponse;
-};
-
-export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
-
 export type GetProjectReposData = {
     body?: never;
     path: {
@@ -1577,6 +1583,36 @@ export type GetProjectHasDependentsResponses = {
 };
 
 export type GetProjectHasDependentsResponse = GetProjectHasDependentsResponses[keyof GetProjectHasDependentsResponses];
+
+export type GetProjectData = {
+    body?: never;
+    path: {
+        /**
+         * Canonical Id
+         */
+        canonical_id: string;
+    };
+    query?: never;
+    url: '/projects/{canonical_id}';
+};
+
+export type GetProjectErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
+
+export type GetProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProjectDetailResponse;
+};
+
+export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
 
 export type ListReposData = {
     body?: never;
@@ -1737,6 +1773,36 @@ export type GetRepoGithubDependentsResponses = {
 
 export type GetRepoGithubDependentsResponse = GetRepoGithubDependentsResponses[keyof GetRepoGithubDependentsResponses];
 
+export type GetRepoMaintenanceProfileData = {
+    body?: never;
+    path: {
+        /**
+         * Canonical Id
+         */
+        canonical_id: string;
+    };
+    query?: never;
+    url: '/repos/{canonical_id}/maintenance-profile';
+};
+
+export type GetRepoMaintenanceProfileErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetRepoMaintenanceProfileError = GetRepoMaintenanceProfileErrors[keyof GetRepoMaintenanceProfileErrors];
+
+export type GetRepoMaintenanceProfileResponses = {
+    /**
+     * Successful Response
+     */
+    200: MaintenanceProfileResponse;
+};
+
+export type GetRepoMaintenanceProfileResponse = GetRepoMaintenanceProfileResponses[keyof GetRepoMaintenanceProfileResponses];
+
 export type GetRepoContributorsData = {
     body?: never;
     path: {
@@ -1893,7 +1959,7 @@ export type ListGitlogArtifactsData = {
         /**
          * Repo
          *
-         * Filter by repo canonical_id (exact match)
+         * Filter by repo canonical_id (case-insensitive)
          */
         repo?: string | null;
         /**

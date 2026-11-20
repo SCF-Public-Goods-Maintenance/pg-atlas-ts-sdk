@@ -144,6 +144,16 @@ describe('PG Atlas SDK generated contract tests', () => {
     }
   },
   {
+    "functionName": "getRepoMaintenanceProfile",
+    "httpMethod": "GET",
+    "expectedPath": "/repos/demo-id/maintenance-profile",
+    "requestOptions": {
+      "path": {
+        "canonical_id": "demo-id"
+      }
+    }
+  },
+  {
     "functionName": "getSbomSubmission",
     "httpMethod": "GET",
     "expectedPath": "/ingest/sbom/101",

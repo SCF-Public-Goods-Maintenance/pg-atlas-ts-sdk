@@ -7,7 +7,7 @@
       "name": "Mozilla Public License v2.0",
       "identifier": "MPL-2.0"
     },
-    "version": "0.7.0"
+    "version": "0.8.0"
   },
   "paths": {
     "/health": {
@@ -414,57 +414,6 @@
         ]
       }
     },
-    "/projects/{canonical_id}": {
-      "get": {
-        "tags": [
-          "Graph: Projects",
-          "Source: OpenGrants",
-          "Source: PG Atlas"
-        ],
-        "summary": "Project detail",
-        "description": "Full detail for a single project, including validated metadata.\n\nThe ``metadata`` field is the normalised form of the raw JSONB column —\nunknown keys from the crawler are passed through via ``extra=\"allow\"``.",
-        "operationId": "get_project",
-        "parameters": [
-          {
-            "name": "canonical_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Canonical Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectDetailResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "x-codeSamples": [
-          {
-            "lang": "JavaScript",
-            "source": "import { getProject } from 'your-package';\n\nawait getProject()"
-          }
-        ]
-      }
-    },
     "/projects/{canonical_id}/repos": {
       "get": {
         "tags": [
@@ -743,6 +692,57 @@
           {
             "lang": "JavaScript",
             "source": "import { getProjectHasDependents } from 'your-package';\n\nawait getProjectHasDependents()"
+          }
+        ]
+      }
+    },
+    "/projects/{canonical_id}": {
+      "get": {
+        "tags": [
+          "Graph: Projects",
+          "Source: OpenGrants",
+          "Source: PG Atlas"
+        ],
+        "summary": "Project detail",
+        "description": "Full detail for a single project, including validated metadata.\n\nThe ``metadata`` field is the normalised form of the raw JSONB column —\nunknown keys from the crawler are passed through via ``extra=\"allow\"``.",
+        "operationId": "get_project",
+        "parameters": [
+          {
+            "name": "canonical_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Canonical Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "import { getProject } from 'your-package';\n\nawait getProject()"
           }
         ]
       }
@@ -1050,6 +1050,55 @@
           {
             "lang": "JavaScript",
             "source": "import { getRepoGithubDependents } from 'your-package';\n\nawait getRepoGithubDependents()"
+          }
+        ]
+      }
+    },
+    "/repos/{canonical_id}/maintenance-profile": {
+      "get": {
+        "tags": [
+          "Source: PG Atlas"
+        ],
+        "summary": "Maintenance profile for a repo",
+        "description": "Per-signal maintenance values with coverage states and percentile ranks.\n\nServes the profile written by the gated materializer. Every ranked value\ncarries its coverage state and, when ranked, its percentile and pool\nsize; the profile carries its as-of and the parameters it was computed\nunder. 404 while no profile has been materialized for the repository.",
+        "operationId": "get_repo_maintenance_profile",
+        "parameters": [
+          {
+            "name": "canonical_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Canonical Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceProfileResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "JavaScript",
+            "source": "import { getRepoMaintenanceProfile } from 'your-package';\n\nawait getRepoMaintenanceProfile()"
           }
         ]
       }
@@ -1363,10 +1412,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter by repo canonical_id (exact match)",
+              "description": "Filter by repo canonical_id (case-insensitive)",
               "title": "Repo"
             },
-            "description": "Filter by repo canonical_id (exact match)"
+            "description": "Filter by repo canonical_id (case-insensitive)"
           },
           {
             "name": "limit",
@@ -1480,110 +1529,28 @@
   },
   "components": {
     "schemas": {
-      "Visibility": {
+      "ActivityStatus": {
         "type": "string",
         "enum": [
-          "public",
-          "private"
+          "live",
+          "in-dev",
+          "discontinued",
+          "non-responsive"
         ],
-        "title": "Visibility",
-        "description": "Whether a Repo is publicly accessible (affects data collection scope)."
+        "title": "ActivityStatus",
+        "description": "Lifecycle status of a Project.\n\nUpdated by the SCF Impact Survey (yearly) and higher-frequency signals;\nsee the Activity Status Update Logic in the architecture docs."
       },
-      "ValidationError": {
+      "ContributionEntry": {
         "properties": {
-          "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
-            "type": "array",
-            "title": "Location"
-          },
-          "msg": {
+          "repo_canonical_id": {
             "type": "string",
-            "title": "Message"
+            "title": "Repo Canonical Id"
           },
-          "type": {
+          "repo_display_name": {
             "type": "string",
-            "title": "Error Type"
+            "title": "Repo Display Name"
           },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
-          }
-        },
-        "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
-        "title": "ValidationError"
-      },
-      "SubmissionStatus": {
-        "type": "string",
-        "enum": [
-          "pending",
-          "processed",
-          "failed"
-        ],
-        "title": "SubmissionStatus",
-        "description": "Processing state of an artifact-linked audit record."
-      },
-      "ScfSubmission": {
-        "properties": {
-          "round": {
-            "type": "string",
-            "title": "Round"
-          },
-          "title": {
-            "type": "string",
-            "title": "Title"
-          }
-        },
-        "type": "object",
-        "required": [
-          "round",
-          "title"
-        ],
-        "title": "ScfSubmission",
-        "description": "A single SCF funding round submission."
-      },
-      "SbomSubmissionResponse": {
-        "properties": {
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "repository_claim": {
-            "type": "string",
-            "title": "Repository Claim"
-          },
-          "actor_claim": {
-            "type": "string",
-            "title": "Actor Claim"
-          },
-          "sbom_content_hash": {
-            "type": "string",
-            "title": "Sbom Content Hash"
-          },
-          "artifact_path": {
-            "type": "string",
-            "title": "Artifact Path"
-          },
-          "status": {
-            "$ref": "#/components/schemas/SubmissionStatus"
-          },
-          "error_detail": {
+          "project_canonical_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -1592,14 +1559,58 @@
                 "type": "null"
               }
             ],
-            "title": "Error Detail"
+            "title": "Project Canonical Id"
           },
-          "submitted_at": {
+          "number_of_commits": {
+            "type": "integer",
+            "title": "Number Of Commits"
+          },
+          "first_commit_date": {
             "type": "string",
             "format": "date-time",
-            "title": "Submitted At"
+            "title": "First Commit Date"
           },
-          "processed_at": {
+          "last_commit_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Commit Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "repo_canonical_id",
+          "repo_display_name",
+          "project_canonical_id",
+          "number_of_commits",
+          "first_commit_date",
+          "last_commit_date"
+        ],
+        "title": "ContributionEntry",
+        "description": "A single repo that a contributor has committed to."
+      },
+      "ContributorDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email_hash": {
+            "type": "string",
+            "title": "Email Hash"
+          },
+          "total_repos": {
+            "type": "integer",
+            "title": "Total Repos"
+          },
+          "total_commits": {
+            "type": "integer",
+            "title": "Total Commits"
+          },
+          "first_contribution": {
             "anyOf": [
               {
                 "type": "string",
@@ -1609,76 +1620,121 @@
                 "type": "null"
               }
             ],
-            "title": "Processed At"
+            "title": "First Contribution"
+          },
+          "last_contribution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Contribution"
+          },
+          "repos": {
+            "items": {
+              "$ref": "#/components/schemas/ContributionEntry"
+            },
+            "type": "array",
+            "title": "Repos"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "repository_claim",
-          "actor_claim",
-          "sbom_content_hash",
-          "artifact_path",
-          "status",
-          "error_detail",
-          "submitted_at",
-          "processed_at"
+          "name",
+          "email_hash",
+          "total_repos",
+          "total_commits",
+          "first_contribution",
+          "last_contribution",
+          "repos"
         ],
-        "title": "SbomSubmissionResponse",
-        "description": "Full SBOM submission record.\n\nSerialised from the ``SbomSubmission`` ORM model.  The ``sbom_content_hash``\nfield is the SHA-256 hex digest of the raw submitted payload."
+        "title": "ContributorDetailResponse",
+        "description": "Full contributor detail with aggregated statistics and per-repo activity."
       },
-      "SbomSubmissionListResponse": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/SbomSubmissionResponse"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          },
-          "offset": {
-            "type": "integer",
-            "title": "Offset"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "limit",
-          "offset"
-        ],
-        "title": "SbomSubmissionListResponse",
-        "description": "Paginated list of SBOM submission records.\n\nReturned by the list endpoint with ``total`` reflecting the count after\nany ``repository`` filter has been applied."
-      },
-      "SbomSubmissionDetailResponse": {
+      "ContributorSummary": {
         "properties": {
           "id": {
             "type": "integer",
             "title": "Id"
           },
-          "repository_claim": {
+          "name": {
             "type": "string",
-            "title": "Repository Claim"
+            "title": "Name"
           },
-          "actor_claim": {
+          "email_hash": {
             "type": "string",
-            "title": "Actor Claim"
+            "title": "Email Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email_hash"
+        ],
+        "title": "ContributorSummary",
+        "description": "Compact contributor reference embedded in repo detail responses."
+      },
+      "DepCounts": {
+        "properties": {
+          "repos": {
+            "type": "integer",
+            "title": "Repos"
           },
-          "sbom_content_hash": {
+          "external_repos": {
+            "type": "integer",
+            "title": "External Repos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "repos",
+          "external_repos"
+        ],
+        "title": "DepCounts",
+        "description": "Counts of dependency edges grouped by target vertex type.\n\nProvided as part of the repo detail response so the frontend can show\n\"depends on N repos + M external\" without fetching the full edge list."
+      },
+      "EdgeConfidence": {
+        "type": "string",
+        "enum": [
+          "verified-sbom",
+          "inferred-shadow"
+        ],
+        "title": "EdgeConfidence",
+        "description": "How firmly an edge was established."
+      },
+      "GitLogArtifactDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "repo_id": {
+            "type": "integer",
+            "title": "Repo Id"
+          },
+          "repo_canonical_id": {
             "type": "string",
-            "title": "Sbom Content Hash"
+            "title": "Repo Canonical Id"
+          },
+          "repo_display_name": {
+            "type": "string",
+            "title": "Repo Display Name"
           },
           "artifact_path": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Artifact Path"
           },
           "status": {
@@ -1694,6 +1750,10 @@
               }
             ],
             "title": "Error Detail"
+          },
+          "since_months": {
+            "type": "integer",
+            "title": "Since Months"
           },
           "submitted_at": {
             "type": "string",
@@ -1727,69 +1787,72 @@
         "type": "object",
         "required": [
           "id",
-          "repository_claim",
-          "actor_claim",
-          "sbom_content_hash",
+          "repo_id",
+          "repo_canonical_id",
+          "repo_display_name",
           "artifact_path",
           "status",
           "error_detail",
+          "since_months",
           "submitted_at",
           "processed_at"
         ],
-        "title": "SbomSubmissionDetailResponse",
-        "description": "Extended SBOM submission record with the raw artifact content.\n\nReturned by the detail endpoint.  ``raw_artifact`` contains the full JSON\ntext of the stored SBOM, or ``None`` if the artifact file is missing from\nthe store."
+        "title": "GitLogArtifactDetailResponse",
+        "description": "Full gitlog artifact audit record including raw artifact content."
       },
-      "SbomAcceptedResponse": {
+      "GitLogArtifactSummary": {
         "properties": {
-          "message": {
-            "type": "string",
-            "title": "Message"
-          },
-          "repository": {
-            "type": "string",
-            "title": "Repository"
-          },
-          "package_count": {
+          "id": {
             "type": "integer",
-            "title": "Package Count"
-          }
-        },
-        "type": "object",
-        "required": [
-          "message",
-          "repository",
-          "package_count"
-        ],
-        "title": "SbomAcceptedResponse",
-        "description": "Response body returned on successful SBOM submission (202 Accepted)."
-      },
-      "RepoVertexType": {
-        "type": "string",
-        "enum": [
-          "repo",
-          "external-repo"
-        ],
-        "title": "RepoVertexType",
-        "description": "Discriminator values for the RepoVertex joined-table-inheritance hierarchy."
-      },
-      "RepoSummary": {
-        "properties": {
-          "canonical_id": {
+            "title": "Id"
+          },
+          "repo_id": {
+            "type": "integer",
+            "title": "Repo Id"
+          },
+          "repo_canonical_id": {
             "type": "string",
-            "title": "Canonical Id"
+            "title": "Repo Canonical Id"
           },
-          "display_name": {
+          "repo_display_name": {
             "type": "string",
-            "title": "Display Name"
+            "title": "Repo Display Name"
           },
-          "visibility": {
-            "$ref": "#/components/schemas/Visibility"
+          "artifact_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact Path"
           },
-          "latest_version": {
+          "status": {
+            "$ref": "#/components/schemas/SubmissionStatus"
+          },
+          "error_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Detail"
+          },
+          "since_months": {
+            "type": "integer",
+            "title": "Since Months"
+          },
+          "submitted_at": {
             "type": "string",
-            "title": "Latest Version"
+            "format": "date-time",
+            "title": "Submitted At"
           },
-          "latest_commit_date": {
+          "processed_at": {
             "anyOf": [
               {
                 "type": "string",
@@ -1799,9 +1862,44 @@
                 "type": "null"
               }
             ],
-            "title": "Latest Commit Date"
+            "title": "Processed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "repo_id",
+          "repo_canonical_id",
+          "repo_display_name",
+          "artifact_path",
+          "status",
+          "error_detail",
+          "since_months",
+          "submitted_at",
+          "processed_at"
+        ],
+        "title": "GitLogArtifactSummary",
+        "description": "Compact gitlog artifact audit record for list endpoints."
+      },
+      "GithubDependentObservationItem": {
+        "properties": {
+          "dependent_canonical_id": {
+            "type": "string",
+            "title": "Dependent Canonical Id"
           },
-          "repo_url": {
+          "dependent_repo_url": {
+            "type": "string",
+            "title": "Dependent Repo Url"
+          },
+          "observed_owner": {
+            "type": "string",
+            "title": "Observed Owner"
+          },
+          "observed_repo_name": {
+            "type": "string",
+            "title": "Observed Repo Name"
+          },
+          "resolved_repo_canonical_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -1810,9 +1908,134 @@
                 "type": "null"
               }
             ],
-            "title": "Repo Url"
+            "title": "Resolved Repo Canonical Id"
           },
-          "project_id": {
+          "package_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Ids"
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dependent_canonical_id",
+          "dependent_repo_url",
+          "observed_owner",
+          "observed_repo_name",
+          "first_seen_at",
+          "last_seen_at"
+        ],
+        "title": "GithubDependentObservationItem",
+        "description": "One active GitHub dependent observation for a source repo."
+      },
+      "GithubDependentsResponse": {
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/GithubDependentsSummary"
+          },
+          "observations": {
+            "$ref": "#/components/schemas/PaginatedResponse_GithubDependentObservationItem_"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "observations"
+        ],
+        "title": "GithubDependentsResponse",
+        "description": "Summary plus paginated active observations for one source repo."
+      },
+      "GithubDependentsSummary": {
+        "properties": {
+          "latest_attempt_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Attempt At"
+          },
+          "latest_attempt_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Attempt Status"
+          },
+          "latest_attempt_listing_incomplete_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Attempt Listing Incomplete Reason"
+          },
+          "latest_attempt_counts_incomplete_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Attempt Counts Incomplete Reason"
+          },
+          "observations_as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observations As Of"
+          },
+          "reported_counts_as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reported Counts As Of"
+          },
+          "repos_total_reported": {
             "anyOf": [
               {
                 "type": "integer"
@@ -1821,7 +2044,530 @@
                 "type": "null"
               }
             ],
-            "title": "Project Id"
+            "title": "Repos Total Reported"
+          },
+          "packages_total_reported": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packages Total Reported"
+          },
+          "packages_scanned": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packages Scanned"
+          },
+          "active_observations": {
+            "type": "integer",
+            "title": "Active Observations",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "GithubDependentsSummary",
+        "description": "Freshness and completeness summary for a source repo's observations.\n\n``observations_as_of`` is the finish time of the latest applied\nlisting-complete run; ``reported_counts_as_of`` is the finish time of the\nlatest applied counts-complete run. The two can point to different runs,\nso the reported totals always carry their own timestamp. Reported header\ntotals may exceed the enumerable public entries and, for multi-package\nrepositories, are per-package sums that can double count a dependent\nusing several packages."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthComponents": {
+        "properties": {
+          "artifact_store": {
+            "type": "string",
+            "enum": [
+              "local",
+              "IPFS"
+            ],
+            "title": "Artifact Store"
+          },
+          "database": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "not-configured"
+            ],
+            "title": "Database"
+          },
+          "schema_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schema Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifact_store",
+          "database",
+          "schema_version"
+        ],
+        "title": "HealthComponents",
+        "description": "Component-level readiness details for GET /health."
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "live",
+              "ready"
+            ],
+            "title": "Status"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "components": {
+            "$ref": "#/components/schemas/HealthComponents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "version",
+          "components"
+        ],
+        "title": "HealthResponse",
+        "description": "Response body for GET /health."
+      },
+      "MaintenanceProfileResponse": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "title": "Schema Version"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          },
+          "response_interval_days": {
+            "type": "integer",
+            "title": "Response Interval Days"
+          },
+          "eligible_population": {
+            "type": "integer",
+            "title": "Eligible Population"
+          },
+          "signals": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Signals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schema_version",
+          "as_of",
+          "window_days",
+          "response_interval_days",
+          "eligible_population",
+          "signals"
+        ],
+        "title": "MaintenanceProfileResponse",
+        "description": "Stored maintenance profile for one repo, as materialized."
+      },
+      "MetadataResponse": {
+        "properties": {
+          "total_projects": {
+            "type": "integer",
+            "title": "Total Projects"
+          },
+          "active_projects": {
+            "type": "integer",
+            "title": "Active Projects"
+          },
+          "total_repos": {
+            "type": "integer",
+            "title": "Total Repos"
+          },
+          "active_repos_90d": {
+            "type": "integer",
+            "title": "Active Repos 90D"
+          },
+          "total_external_repos": {
+            "type": "integer",
+            "title": "Total External Repos"
+          },
+          "total_dependency_edges": {
+            "type": "integer",
+            "title": "Total Dependency Edges"
+          },
+          "total_contributor_edges": {
+            "type": "integer",
+            "title": "Total Contributor Edges"
+          },
+          "active_contributors_30d": {
+            "type": "integer",
+            "title": "Active Contributors 30D"
+          },
+          "active_contributors_90d": {
+            "type": "integer",
+            "title": "Active Contributors 90D"
+          },
+          "last_updated": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_projects",
+          "active_projects",
+          "total_repos",
+          "active_repos_90d",
+          "total_external_repos",
+          "total_dependency_edges",
+          "total_contributor_edges",
+          "active_contributors_30d",
+          "active_contributors_90d",
+          "last_updated"
+        ],
+        "title": "MetadataResponse",
+        "description": "Ecosystem-wide summary statistics returned by ``GET /metadata``."
+      },
+      "PaginatedResponse_ContributorSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ContributorSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaginatedResponse[ContributorSummary]"
+      },
+      "PaginatedResponse_GitLogArtifactSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GitLogArtifactSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaginatedResponse[GitLogArtifactSummary]"
+      },
+      "PaginatedResponse_GithubDependentObservationItem_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GithubDependentObservationItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaginatedResponse[GithubDependentObservationItem]"
+      },
+      "PaginatedResponse_ProjectContributorSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectContributorSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaginatedResponse[ProjectContributorSummary]"
+      },
+      "PaginatedResponse_ProjectSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaginatedResponse[ProjectSummary]"
+      },
+      "PaginatedResponse_RepoContributorSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RepoContributorSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaginatedResponse[RepoContributorSummary]"
+      },
+      "PaginatedResponse_RepoSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RepoSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaginatedResponse[RepoSummary]"
+      },
+      "ProjectContributorSummary": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email_hash": {
+            "type": "string",
+            "title": "Email Hash"
+          },
+          "total_commits_in_project": {
+            "type": "integer",
+            "title": "Total Commits In Project"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email_hash",
+          "total_commits_in_project"
+        ],
+        "title": "ProjectContributorSummary",
+        "description": "Contributor summary aggregated across all repos in a project."
+      },
+      "ProjectDependency": {
+        "properties": {
+          "project": {
+            "$ref": "#/components/schemas/ProjectSummary"
+          },
+          "edge_count": {
+            "type": "integer",
+            "title": "Edge Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project",
+          "edge_count"
+        ],
+        "title": "ProjectDependency",
+        "description": "A collapsed project-level dependency: aggregates repo-level edges\nbetween two projects into a single summary."
+      },
+      "ProjectDetailResponse": {
+        "properties": {
+          "canonical_id": {
+            "type": "string",
+            "title": "Canonical Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "project_type": {
+            "$ref": "#/components/schemas/ProjectType"
+          },
+          "activity_status": {
+            "$ref": "#/components/schemas/ActivityStatus"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "git_owner_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Owner Url"
           },
           "pony_factor": {
             "anyOf": [
@@ -1845,29 +2591,152 @@
             ],
             "title": "Criticality Score"
           },
-          "adoption_downloads": {
+          "adoption_score": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Adoption Downloads"
+            "title": "Adoption Score"
           },
-          "adoption_stars": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adoption Stars"
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
           },
-          "adoption_forks": {
+          "project_id": {
+            "type": "integer",
+            "title": "Project Id"
+          },
+          "active_contributors_30d": {
+            "type": "integer",
+            "title": "Active Contributors 30D"
+          },
+          "active_contributors_90d": {
+            "type": "integer",
+            "title": "Active Contributors 90D"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/ProjectMetadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "canonical_id",
+          "display_name",
+          "project_type",
+          "activity_status",
+          "category",
+          "git_owner_url",
+          "pony_factor",
+          "criticality_score",
+          "adoption_score",
+          "updated_at",
+          "project_id",
+          "active_contributors_30d",
+          "active_contributors_90d",
+          "metadata"
+        ],
+        "title": "ProjectDetailResponse",
+        "description": "Full project detail including contributor stats and metadata.\n\n``metadata`` is the normalised form of the ``project_metadata`` JSONB column."
+      },
+      "ProjectMetadata": {
+        "properties": {
+          "scf_submissions": {
+            "items": {
+              "$ref": "#/components/schemas/ScfSubmission"
+            },
+            "type": "array",
+            "title": "Scf Submissions",
+            "default": []
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "technical_architecture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Technical Architecture"
+          },
+          "scf_tranche_completion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scf Tranche Completion"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "x_profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X Profile"
+          },
+          "total_awarded_usd": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Awarded Usd"
+          },
+          "total_paid_usd": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Paid Usd"
+          },
+          "awarded_submissions_count": {
             "anyOf": [
               {
                 "type": "integer"
@@ -1876,7 +2745,128 @@
                 "type": "null"
               }
             ],
-            "title": "Adoption Forks"
+            "title": "Awarded Submissions Count"
+          },
+          "open_source": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Source"
+          },
+          "socials": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Socials"
+          },
+          "analytics": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analytics"
+          },
+          "regions_of_operation": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Regions Of Operation"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "ProjectMetadata",
+        "description": "Validates and normalises the ``project_metadata`` JSONB column on ``Project``.\n\nThe single write path (``_build_project_metadata`` in the OpenGrants crawler)\nguarantees consistent key names and types.  ``extra = \"allow\"`` ensures that\nany future keys added by the crawler pass through without breaking the API.\nFuture keys must still be added in this model for clarity."
+      },
+      "ProjectSummary": {
+        "properties": {
+          "canonical_id": {
+            "type": "string",
+            "title": "Canonical Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "project_type": {
+            "$ref": "#/components/schemas/ProjectType"
+          },
+          "activity_status": {
+            "$ref": "#/components/schemas/ActivityStatus"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "git_owner_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Owner Url"
+          },
+          "pony_factor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pony Factor"
+          },
+          "criticality_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Criticality Score"
+          },
+          "adoption_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adoption Score"
           },
           "updated_at": {
             "type": "string",
@@ -1888,20 +2878,106 @@
         "required": [
           "canonical_id",
           "display_name",
-          "visibility",
-          "latest_version",
-          "latest_commit_date",
-          "repo_url",
-          "project_id",
+          "project_type",
+          "activity_status",
+          "category",
+          "git_owner_url",
           "pony_factor",
           "criticality_score",
-          "adoption_downloads",
-          "adoption_stars",
-          "adoption_forks",
+          "adoption_score",
           "updated_at"
         ],
-        "title": "RepoSummary",
-        "description": "Compact repo representation used in list endpoints and as an embedded\nreference in project detail responses."
+        "title": "ProjectSummary",
+        "description": "Compact project representation used in list endpoints and as an embedded\nreference in repo detail responses."
+      },
+      "ProjectType": {
+        "type": "string",
+        "enum": [
+          "public-good",
+          "scf-project"
+        ],
+        "title": "ProjectType",
+        "description": "Classification of a Project within the PG Atlas universe."
+      },
+      "RepoContributorSummary": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email_hash": {
+            "type": "string",
+            "title": "Email Hash"
+          },
+          "number_of_commits": {
+            "type": "integer",
+            "title": "Number Of Commits"
+          },
+          "first_commit_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Commit Date"
+          },
+          "last_commit_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Commit Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email_hash",
+          "number_of_commits",
+          "first_commit_date",
+          "last_commit_date"
+        ],
+        "title": "RepoContributorSummary",
+        "description": "Contributor summary with commit counts for one repo."
+      },
+      "RepoDependency": {
+        "properties": {
+          "canonical_id": {
+            "type": "string",
+            "title": "Canonical Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "vertex_type": {
+            "$ref": "#/components/schemas/RepoVertexType"
+          },
+          "version_range": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Range"
+          },
+          "confidence": {
+            "$ref": "#/components/schemas/EdgeConfidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "canonical_id",
+          "display_name",
+          "vertex_type",
+          "version_range",
+          "confidence"
+        ],
+        "title": "RepoDependency",
+        "description": "A single dependency or reverse-dependency edge from a repo.\n\n``vertex_type`` tells the frontend whether the target is an in-ecosystem\n``Repo`` or an ``ExternalRepo``."
       },
       "RepoDetailResponse": {
         "properties": {
@@ -2104,70 +3180,7 @@
         "title": "RepoDetailResponse",
         "description": "Full repo detail with parent project, contributors, releases, dependency counts,\nand active contributor stats."
       },
-      "DepCounts": {
-        "properties": {
-          "repos": {
-            "type": "integer",
-            "title": "Repos"
-          },
-          "external_repos": {
-            "type": "integer",
-            "title": "External Repos"
-          }
-        },
-        "type": "object",
-        "required": [
-          "repos",
-          "external_repos"
-        ],
-        "title": "DepCounts",
-        "description": "Counts of dependency edges grouped by target vertex type.\n\nProvided as part of the repo detail response so the frontend can show\n\"depends on N repos + M external\" without fetching the full edge list."
-      },
-      "ContributorSummary": {
-        "properties": {
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "email_hash": {
-            "type": "string",
-            "title": "Email Hash"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "email_hash"
-        ],
-        "title": "ContributorSummary",
-        "description": "Compact contributor reference embedded in repo detail responses."
-      },
-      "ActivityStatus": {
-        "type": "string",
-        "enum": [
-          "live",
-          "in-dev",
-          "discontinued",
-          "non-responsive"
-        ],
-        "title": "ActivityStatus",
-        "description": "Lifecycle status of a Project.\n\nUpdated by the SCF Impact Survey (yearly) and higher-frequency signals;\nsee the Activity Status Update Logic in the architecture docs."
-      },
-      "ProjectType": {
-        "type": "string",
-        "enum": [
-          "public-good",
-          "scf-project"
-        ],
-        "title": "ProjectType",
-        "description": "Classification of a Project within the PG Atlas universe."
-      },
-      "ProjectSummary": {
+      "RepoSummary": {
         "properties": {
           "canonical_id": {
             "type": "string",
@@ -2177,13 +3190,26 @@
             "type": "string",
             "title": "Display Name"
           },
-          "project_type": {
-            "$ref": "#/components/schemas/ProjectType"
+          "visibility": {
+            "$ref": "#/components/schemas/Visibility"
           },
-          "activity_status": {
-            "$ref": "#/components/schemas/ActivityStatus"
+          "latest_version": {
+            "type": "string",
+            "title": "Latest Version"
           },
-          "category": {
+          "latest_commit_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Commit Date"
+          },
+          "repo_url": {
             "anyOf": [
               {
                 "type": "string"
@@ -2192,755 +3218,153 @@
                 "type": "null"
               }
             ],
-            "title": "Category"
-          },
-          "git_owner_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Git Owner Url"
-          },
-          "pony_factor": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Pony Factor"
-          },
-          "criticality_score": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Criticality Score"
-          },
-          "adoption_score": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adoption Score"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "canonical_id",
-          "display_name",
-          "project_type",
-          "activity_status",
-          "category",
-          "git_owner_url",
-          "pony_factor",
-          "criticality_score",
-          "adoption_score",
-          "updated_at"
-        ],
-        "title": "ProjectSummary",
-        "description": "Compact project representation used in list endpoints and as an embedded\nreference in repo detail responses."
-      },
-      "RepoDependency": {
-        "properties": {
-          "canonical_id": {
-            "type": "string",
-            "title": "Canonical Id"
-          },
-          "display_name": {
-            "type": "string",
-            "title": "Display Name"
-          },
-          "vertex_type": {
-            "$ref": "#/components/schemas/RepoVertexType"
-          },
-          "version_range": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Version Range"
-          },
-          "confidence": {
-            "$ref": "#/components/schemas/EdgeConfidence"
-          }
-        },
-        "type": "object",
-        "required": [
-          "canonical_id",
-          "display_name",
-          "vertex_type",
-          "version_range",
-          "confidence"
-        ],
-        "title": "RepoDependency",
-        "description": "A single dependency or reverse-dependency edge from a repo.\n\n``vertex_type`` tells the frontend whether the target is an in-ecosystem\n``Repo`` or an ``ExternalRepo``."
-      },
-      "EdgeConfidence": {
-        "type": "string",
-        "enum": [
-          "verified-sbom",
-          "inferred-shadow"
-        ],
-        "title": "EdgeConfidence",
-        "description": "How firmly an edge was established."
-      },
-      "RepoContributorSummary": {
-        "properties": {
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "email_hash": {
-            "type": "string",
-            "title": "Email Hash"
-          },
-          "number_of_commits": {
-            "type": "integer",
-            "title": "Number Of Commits"
-          },
-          "first_commit_date": {
-            "type": "string",
-            "format": "date-time",
-            "title": "First Commit Date"
-          },
-          "last_commit_date": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Last Commit Date"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "email_hash",
-          "number_of_commits",
-          "first_commit_date",
-          "last_commit_date"
-        ],
-        "title": "RepoContributorSummary",
-        "description": "Contributor summary with commit counts for one repo."
-      },
-      "ProjectMetadata": {
-        "properties": {
-          "scf_submissions": {
-            "items": {
-              "$ref": "#/components/schemas/ScfSubmission"
-            },
-            "type": "array",
-            "title": "Scf Submissions",
-            "default": []
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "technical_architecture": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Technical Architecture"
-          },
-          "scf_tranche_completion": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scf Tranche Completion"
-          },
-          "website": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Website"
-          },
-          "x_profile": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "X Profile"
-          },
-          "total_awarded_usd": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Total Awarded Usd"
-          },
-          "total_paid_usd": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Total Paid Usd"
-          },
-          "awarded_submissions_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Awarded Submissions Count"
-          },
-          "open_source": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Open Source"
-          },
-          "socials": {
-            "anyOf": [
-              {
-                "items": {
-                  "additionalProperties": true,
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Socials"
-          },
-          "analytics": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Analytics"
-          },
-          "regions_of_operation": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Regions Of Operation"
-          }
-        },
-        "additionalProperties": true,
-        "type": "object",
-        "title": "ProjectMetadata",
-        "description": "Validates and normalises the ``project_metadata`` JSONB column on ``Project``.\n\nThe single write path (``_build_project_metadata`` in the OpenGrants crawler)\nguarantees consistent key names and types.  ``extra = \"allow\"`` ensures that\nany future keys added by the crawler pass through without breaking the API.\nFuture keys must still be added in this model for clarity."
-      },
-      "ProjectDetailResponse": {
-        "properties": {
-          "canonical_id": {
-            "type": "string",
-            "title": "Canonical Id"
-          },
-          "display_name": {
-            "type": "string",
-            "title": "Display Name"
-          },
-          "project_type": {
-            "$ref": "#/components/schemas/ProjectType"
-          },
-          "activity_status": {
-            "$ref": "#/components/schemas/ActivityStatus"
-          },
-          "category": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Category"
-          },
-          "git_owner_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Git Owner Url"
-          },
-          "pony_factor": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Pony Factor"
-          },
-          "criticality_score": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Criticality Score"
-          },
-          "adoption_score": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adoption Score"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
+            "title": "Repo Url"
           },
           "project_id": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Project Id"
           },
-          "active_contributors_30d": {
-            "type": "integer",
-            "title": "Active Contributors 30D"
+          "pony_factor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pony Factor"
           },
-          "active_contributors_90d": {
-            "type": "integer",
-            "title": "Active Contributors 90D"
+          "criticality_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Criticality Score"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/ProjectMetadata"
+          "adoption_downloads": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adoption Downloads"
+          },
+          "adoption_stars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adoption Stars"
+          },
+          "adoption_forks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adoption Forks"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
           }
         },
         "type": "object",
         "required": [
           "canonical_id",
           "display_name",
-          "project_type",
-          "activity_status",
-          "category",
-          "git_owner_url",
+          "visibility",
+          "latest_version",
+          "latest_commit_date",
+          "repo_url",
+          "project_id",
           "pony_factor",
           "criticality_score",
-          "adoption_score",
-          "updated_at",
-          "project_id",
-          "active_contributors_30d",
-          "active_contributors_90d",
-          "metadata"
+          "adoption_downloads",
+          "adoption_stars",
+          "adoption_forks",
+          "updated_at"
         ],
-        "title": "ProjectDetailResponse",
-        "description": "Full project detail including contributor stats and metadata.\n\n``metadata`` is the normalised form of the ``project_metadata`` JSONB column."
+        "title": "RepoSummary",
+        "description": "Compact repo representation used in list endpoints and as an embedded\nreference in project detail responses."
       },
-      "ProjectDependency": {
+      "RepoVertexType": {
+        "type": "string",
+        "enum": [
+          "repo",
+          "external-repo",
+          "redirect"
+        ],
+        "title": "RepoVertexType",
+        "description": "Discriminator values for the RepoVertex joined-table-inheritance hierarchy."
+      },
+      "SbomAcceptedResponse": {
         "properties": {
-          "project": {
-            "$ref": "#/components/schemas/ProjectSummary"
+          "message": {
+            "type": "string",
+            "title": "Message"
           },
-          "edge_count": {
+          "repository": {
+            "type": "string",
+            "title": "Repository"
+          },
+          "package_count": {
             "type": "integer",
-            "title": "Edge Count"
+            "title": "Package Count"
           }
         },
         "type": "object",
         "required": [
-          "project",
-          "edge_count"
+          "message",
+          "repository",
+          "package_count"
         ],
-        "title": "ProjectDependency",
-        "description": "A collapsed project-level dependency: aggregates repo-level edges\nbetween two projects into a single summary."
+        "title": "SbomAcceptedResponse",
+        "description": "Response body returned on successful SBOM submission (202 Accepted)."
       },
-      "ProjectContributorSummary": {
+      "SbomSubmissionDetailResponse": {
         "properties": {
           "id": {
             "type": "integer",
             "title": "Id"
           },
-          "name": {
+          "repository_claim": {
             "type": "string",
-            "title": "Name"
+            "title": "Repository Claim"
           },
-          "email_hash": {
+          "actor_claim": {
             "type": "string",
-            "title": "Email Hash"
+            "title": "Actor Claim"
           },
-          "total_commits_in_project": {
-            "type": "integer",
-            "title": "Total Commits In Project"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "email_hash",
-          "total_commits_in_project"
-        ],
-        "title": "ProjectContributorSummary",
-        "description": "Contributor summary aggregated across all repos in a project."
-      },
-      "PaginatedResponse_RepoSummary_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/RepoSummary"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          },
-          "offset": {
-            "type": "integer",
-            "title": "Offset"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "limit",
-          "offset"
-        ],
-        "title": "PaginatedResponse[RepoSummary]"
-      },
-      "PaginatedResponse_RepoContributorSummary_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/RepoContributorSummary"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          },
-          "offset": {
-            "type": "integer",
-            "title": "Offset"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "limit",
-          "offset"
-        ],
-        "title": "PaginatedResponse[RepoContributorSummary]"
-      },
-      "PaginatedResponse_ProjectSummary_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/ProjectSummary"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          },
-          "offset": {
-            "type": "integer",
-            "title": "Offset"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "limit",
-          "offset"
-        ],
-        "title": "PaginatedResponse[ProjectSummary]"
-      },
-      "PaginatedResponse_ProjectContributorSummary_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/ProjectContributorSummary"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          },
-          "offset": {
-            "type": "integer",
-            "title": "Offset"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "limit",
-          "offset"
-        ],
-        "title": "PaginatedResponse[ProjectContributorSummary]"
-      },
-      "PaginatedResponse_GithubDependentObservationItem_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/GithubDependentObservationItem"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          },
-          "offset": {
-            "type": "integer",
-            "title": "Offset"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "limit",
-          "offset"
-        ],
-        "title": "PaginatedResponse[GithubDependentObservationItem]"
-      },
-      "GithubDependentObservationItem": {
-        "properties": {
-          "dependent_canonical_id": {
+          "sbom_content_hash": {
             "type": "string",
-            "title": "Dependent Canonical Id"
-          },
-          "dependent_repo_url": {
-            "type": "string",
-            "title": "Dependent Repo Url"
-          },
-          "observed_owner": {
-            "type": "string",
-            "title": "Observed Owner"
-          },
-          "observed_repo_name": {
-            "type": "string",
-            "title": "Observed Repo Name"
-          },
-          "resolved_repo_canonical_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resolved Repo Canonical Id"
-          },
-          "package_ids": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Package Ids"
-          },
-          "first_seen_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "First Seen At"
-          },
-          "last_seen_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Last Seen At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "dependent_canonical_id",
-          "dependent_repo_url",
-          "observed_owner",
-          "observed_repo_name",
-          "first_seen_at",
-          "last_seen_at"
-        ],
-        "title": "GithubDependentObservationItem",
-        "description": "One active GitHub dependent observation for a source repo."
-      },
-      "PaginatedResponse_GitLogArtifactSummary_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/GitLogArtifactSummary"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          },
-          "offset": {
-            "type": "integer",
-            "title": "Offset"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "limit",
-          "offset"
-        ],
-        "title": "PaginatedResponse[GitLogArtifactSummary]"
-      },
-      "GitLogArtifactSummary": {
-        "properties": {
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "repo_id": {
-            "type": "integer",
-            "title": "Repo Id"
-          },
-          "repo_canonical_id": {
-            "type": "string",
-            "title": "Repo Canonical Id"
-          },
-          "repo_display_name": {
-            "type": "string",
-            "title": "Repo Display Name"
+            "title": "Sbom Content Hash"
           },
           "artifact_path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "type": "string",
             "title": "Artifact Path"
           },
           "status": {
@@ -2956,399 +3380,6 @@
               }
             ],
             "title": "Error Detail"
-          },
-          "since_months": {
-            "type": "integer",
-            "title": "Since Months"
-          },
-          "submitted_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Submitted At"
-          },
-          "processed_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Processed At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "repo_id",
-          "repo_canonical_id",
-          "repo_display_name",
-          "artifact_path",
-          "status",
-          "error_detail",
-          "since_months",
-          "submitted_at",
-          "processed_at"
-        ],
-        "title": "GitLogArtifactSummary",
-        "description": "Compact gitlog artifact audit record for list endpoints."
-      },
-      "PaginatedResponse_ContributorSummary_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/ContributorSummary"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          },
-          "offset": {
-            "type": "integer",
-            "title": "Offset"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "limit",
-          "offset"
-        ],
-        "title": "PaginatedResponse[ContributorSummary]"
-      },
-      "MetadataResponse": {
-        "properties": {
-          "total_projects": {
-            "type": "integer",
-            "title": "Total Projects"
-          },
-          "active_projects": {
-            "type": "integer",
-            "title": "Active Projects"
-          },
-          "total_repos": {
-            "type": "integer",
-            "title": "Total Repos"
-          },
-          "active_repos_90d": {
-            "type": "integer",
-            "title": "Active Repos 90D"
-          },
-          "total_external_repos": {
-            "type": "integer",
-            "title": "Total External Repos"
-          },
-          "total_dependency_edges": {
-            "type": "integer",
-            "title": "Total Dependency Edges"
-          },
-          "total_contributor_edges": {
-            "type": "integer",
-            "title": "Total Contributor Edges"
-          },
-          "active_contributors_30d": {
-            "type": "integer",
-            "title": "Active Contributors 30D"
-          },
-          "active_contributors_90d": {
-            "type": "integer",
-            "title": "Active Contributors 90D"
-          },
-          "last_updated": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Updated"
-          }
-        },
-        "type": "object",
-        "required": [
-          "total_projects",
-          "active_projects",
-          "total_repos",
-          "active_repos_90d",
-          "total_external_repos",
-          "total_dependency_edges",
-          "total_contributor_edges",
-          "active_contributors_30d",
-          "active_contributors_90d",
-          "last_updated"
-        ],
-        "title": "MetadataResponse",
-        "description": "Ecosystem-wide summary statistics returned by ``GET /metadata``."
-      },
-      "HealthResponse": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "live",
-              "ready"
-            ],
-            "title": "Status"
-          },
-          "version": {
-            "type": "string",
-            "title": "Version"
-          },
-          "components": {
-            "$ref": "#/components/schemas/HealthComponents"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status",
-          "version",
-          "components"
-        ],
-        "title": "HealthResponse",
-        "description": "Response body for GET /health."
-      },
-      "HealthComponents": {
-        "properties": {
-          "artifact_store": {
-            "type": "string",
-            "enum": [
-              "local",
-              "IPFS"
-            ],
-            "title": "Artifact Store"
-          },
-          "database": {
-            "type": "string",
-            "enum": [
-              "ready",
-              "not-configured"
-            ],
-            "title": "Database"
-          },
-          "schema_version": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Schema Version"
-          }
-        },
-        "type": "object",
-        "required": [
-          "artifact_store",
-          "database",
-          "schema_version"
-        ],
-        "title": "HealthComponents",
-        "description": "Component-level readiness details for GET /health."
-      },
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "type": "array",
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
-      },
-      "GithubDependentsSummary": {
-        "properties": {
-          "latest_attempt_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Latest Attempt At"
-          },
-          "latest_attempt_status": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Latest Attempt Status"
-          },
-          "latest_attempt_listing_incomplete_reason": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Latest Attempt Listing Incomplete Reason"
-          },
-          "latest_attempt_counts_incomplete_reason": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Latest Attempt Counts Incomplete Reason"
-          },
-          "observations_as_of": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Observations As Of"
-          },
-          "reported_counts_as_of": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reported Counts As Of"
-          },
-          "repos_total_reported": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Repos Total Reported"
-          },
-          "packages_total_reported": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Packages Total Reported"
-          },
-          "packages_scanned": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Packages Scanned"
-          },
-          "active_observations": {
-            "type": "integer",
-            "title": "Active Observations",
-            "default": 0
-          }
-        },
-        "type": "object",
-        "title": "GithubDependentsSummary",
-        "description": "Freshness and completeness summary for a source repo's observations.\n\n``observations_as_of`` is the finish time of the latest applied\nlisting-complete run; ``reported_counts_as_of`` is the finish time of the\nlatest applied counts-complete run. The two can point to different runs,\nso the reported totals always carry their own timestamp. Reported header\ntotals may exceed the enumerable public entries and, for multi-package\nrepositories, are per-package sums that can double count a dependent\nusing several packages."
-      },
-      "GithubDependentsResponse": {
-        "properties": {
-          "summary": {
-            "$ref": "#/components/schemas/GithubDependentsSummary"
-          },
-          "observations": {
-            "$ref": "#/components/schemas/PaginatedResponse_GithubDependentObservationItem_"
-          }
-        },
-        "type": "object",
-        "required": [
-          "summary",
-          "observations"
-        ],
-        "title": "GithubDependentsResponse",
-        "description": "Summary plus paginated active observations for one source repo."
-      },
-      "GitLogArtifactDetailResponse": {
-        "properties": {
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "repo_id": {
-            "type": "integer",
-            "title": "Repo Id"
-          },
-          "repo_canonical_id": {
-            "type": "string",
-            "title": "Repo Canonical Id"
-          },
-          "repo_display_name": {
-            "type": "string",
-            "title": "Repo Display Name"
-          },
-          "artifact_path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Artifact Path"
-          },
-          "status": {
-            "$ref": "#/components/schemas/SubmissionStatus"
-          },
-          "error_detail": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error Detail"
-          },
-          "since_months": {
-            "type": "integer",
-            "title": "Since Months"
           },
           "submitted_at": {
             "type": "string",
@@ -3382,98 +3413,76 @@
         "type": "object",
         "required": [
           "id",
-          "repo_id",
-          "repo_canonical_id",
-          "repo_display_name",
+          "repository_claim",
+          "actor_claim",
+          "sbom_content_hash",
           "artifact_path",
           "status",
           "error_detail",
-          "since_months",
           "submitted_at",
           "processed_at"
         ],
-        "title": "GitLogArtifactDetailResponse",
-        "description": "Full gitlog artifact audit record including raw artifact content."
+        "title": "SbomSubmissionDetailResponse",
+        "description": "Extended SBOM submission record with the raw artifact content.\n\nReturned by the detail endpoint.  ``raw_artifact`` contains the full JSON\ntext of the stored SBOM, or ``None`` if the artifact file is missing from\nthe store."
       },
-      "ContributorDetailResponse": {
+      "SbomSubmissionListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SbomSubmissionResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "SbomSubmissionListResponse",
+        "description": "Paginated list of SBOM submission records.\n\nReturned by the list endpoint with ``total`` reflecting the count after\nany ``repository`` filter has been applied."
+      },
+      "SbomSubmissionResponse": {
         "properties": {
           "id": {
             "type": "integer",
             "title": "Id"
           },
-          "name": {
+          "repository_claim": {
             "type": "string",
-            "title": "Name"
+            "title": "Repository Claim"
           },
-          "email_hash": {
+          "actor_claim": {
             "type": "string",
-            "title": "Email Hash"
+            "title": "Actor Claim"
           },
-          "total_repos": {
-            "type": "integer",
-            "title": "Total Repos"
-          },
-          "total_commits": {
-            "type": "integer",
-            "title": "Total Commits"
-          },
-          "first_contribution": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "First Contribution"
-          },
-          "last_contribution": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Contribution"
-          },
-          "repos": {
-            "items": {
-              "$ref": "#/components/schemas/ContributionEntry"
-            },
-            "type": "array",
-            "title": "Repos"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "email_hash",
-          "total_repos",
-          "total_commits",
-          "first_contribution",
-          "last_contribution",
-          "repos"
-        ],
-        "title": "ContributorDetailResponse",
-        "description": "Full contributor detail with aggregated statistics and per-repo activity."
-      },
-      "ContributionEntry": {
-        "properties": {
-          "repo_canonical_id": {
+          "sbom_content_hash": {
             "type": "string",
-            "title": "Repo Canonical Id"
+            "title": "Sbom Content Hash"
           },
-          "repo_display_name": {
+          "artifact_path": {
             "type": "string",
-            "title": "Repo Display Name"
+            "title": "Artifact Path"
           },
-          "project_canonical_id": {
+          "status": {
+            "$ref": "#/components/schemas/SubmissionStatus"
+          },
+          "error_detail": {
             "anyOf": [
               {
                 "type": "string"
@@ -3482,34 +3491,118 @@
                 "type": "null"
               }
             ],
-            "title": "Project Canonical Id"
+            "title": "Error Detail"
           },
-          "number_of_commits": {
-            "type": "integer",
-            "title": "Number Of Commits"
-          },
-          "first_commit_date": {
+          "submitted_at": {
             "type": "string",
             "format": "date-time",
-            "title": "First Commit Date"
+            "title": "Submitted At"
           },
-          "last_commit_date": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Last Commit Date"
+          "processed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
           }
         },
         "type": "object",
         "required": [
-          "repo_canonical_id",
-          "repo_display_name",
-          "project_canonical_id",
-          "number_of_commits",
-          "first_commit_date",
-          "last_commit_date"
+          "id",
+          "repository_claim",
+          "actor_claim",
+          "sbom_content_hash",
+          "artifact_path",
+          "status",
+          "error_detail",
+          "submitted_at",
+          "processed_at"
         ],
-        "title": "ContributionEntry",
-        "description": "A single repo that a contributor has committed to."
+        "title": "SbomSubmissionResponse",
+        "description": "Full SBOM submission record.\n\nSerialised from the ``SbomSubmission`` ORM model.  The ``sbom_content_hash``\nfield is the SHA-256 hex digest of the raw submitted payload."
+      },
+      "ScfSubmission": {
+        "properties": {
+          "round": {
+            "type": "string",
+            "title": "Round"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "round",
+          "title"
+        ],
+        "title": "ScfSubmission",
+        "description": "A single SCF funding round submission."
+      },
+      "SubmissionStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "processed",
+          "failed"
+        ],
+        "title": "SubmissionStatus",
+        "description": "Processing state of an artifact-linked audit record."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Visibility": {
+        "type": "string",
+        "enum": [
+          "public",
+          "private"
+        ],
+        "title": "Visibility",
+        "description": "Whether a Repo is publicly accessible (affects data collection scope)."
       }
     }
   },
