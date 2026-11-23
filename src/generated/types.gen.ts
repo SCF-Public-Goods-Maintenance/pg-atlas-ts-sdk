@@ -333,6 +333,18 @@ export type GithubDependentsSummary = {
 };
 
 /**
+ * HTTPErrorResponse
+ *
+ * Generic FastAPI HTTP error envelope with a string detail value.
+ */
+export type HttpErrorResponse = {
+    /**
+     * Detail
+     */
+    detail: string;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -1190,6 +1202,22 @@ export type ScfSubmission = {
 };
 
 /**
+ * SpdxValidationFailed
+ *
+ * Custom validation failure returned by SPDX submissions.
+ */
+export type SpdxValidationFailed = {
+    /**
+     * Error
+     */
+    error: string;
+    /**
+     * Messages
+     */
+    messages: Array<string>;
+};
+
+/**
  * SubmissionStatus
  *
  * Processing state of an artifact-linked audit record.
@@ -1238,6 +1266,19 @@ export type HealthData = {
     url: '/health';
 };
 
+export type HealthErrors = {
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
+    /**
+     * Database or application schema readiness could not be established.
+     */
+    503: HttpErrorResponse;
+};
+
+export type HealthError = HealthErrors[keyof HealthErrors];
+
 export type HealthResponses = {
     /**
      * Successful Response
@@ -1278,6 +1319,10 @@ export type ListSbomSubmissionsErrors = {
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type ListSbomSubmissionsError = ListSbomSubmissionsErrors[keyof ListSbomSubmissionsErrors];
@@ -1306,9 +1351,25 @@ export type IngestSbomData = {
 
 export type IngestSbomErrors = {
     /**
-     * Validation Error
+     * Authorization header is missing or malformed.
      */
-    422: HttpValidationError;
+    401: HttpErrorResponse;
+    /**
+     * OIDC token validation failed.
+     */
+    403: HttpErrorResponse;
+    /**
+     * The request body is not a valid SPDX 2.3 document.
+     */
+    422: SpdxValidationFailed;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
+    /**
+     * The SBOM could not be persisted or queued.
+     */
+    503: HttpErrorResponse;
 };
 
 export type IngestSbomError = IngestSbomErrors[keyof IngestSbomErrors];
@@ -1336,9 +1397,17 @@ export type GetSbomSubmissionData = {
 
 export type GetSbomSubmissionErrors = {
     /**
+     * SBOM submission was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetSbomSubmissionError = GetSbomSubmissionErrors[keyof GetSbomSubmissionErrors];
@@ -1358,6 +1427,15 @@ export type GetMetadataData = {
     query?: never;
     url: '/metadata';
 };
+
+export type GetMetadataErrors = {
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
+};
+
+export type GetMetadataError = GetMetadataErrors[keyof GetMetadataErrors];
 
 export type GetMetadataResponses = {
     /**
@@ -1417,6 +1495,10 @@ export type ListProjectsErrors = {
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type ListProjectsError = ListProjectsErrors[keyof ListProjectsErrors];
@@ -1457,9 +1539,17 @@ export type GetProjectReposData = {
 
 export type GetProjectReposErrors = {
     /**
+     * Project was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetProjectReposError = GetProjectReposErrors[keyof GetProjectReposErrors];
@@ -1504,9 +1594,17 @@ export type GetProjectContributorsData = {
 
 export type GetProjectContributorsErrors = {
     /**
+     * Project was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetProjectContributorsError = GetProjectContributorsErrors[keyof GetProjectContributorsErrors];
@@ -1534,9 +1632,17 @@ export type GetProjectDependsOnData = {
 
 export type GetProjectDependsOnErrors = {
     /**
+     * Project was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetProjectDependsOnError = GetProjectDependsOnErrors[keyof GetProjectDependsOnErrors];
@@ -1566,9 +1672,17 @@ export type GetProjectHasDependentsData = {
 
 export type GetProjectHasDependentsErrors = {
     /**
+     * Project was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetProjectHasDependentsError = GetProjectHasDependentsErrors[keyof GetProjectHasDependentsErrors];
@@ -1598,9 +1712,17 @@ export type GetProjectData = {
 
 export type GetProjectErrors = {
     /**
+     * Project was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
@@ -1653,6 +1775,10 @@ export type ListReposErrors = {
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type ListReposError = ListReposErrors[keyof ListReposErrors];
@@ -1680,9 +1806,17 @@ export type GetRepoDependsOnData = {
 
 export type GetRepoDependsOnErrors = {
     /**
+     * Repo was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetRepoDependsOnError = GetRepoDependsOnErrors[keyof GetRepoDependsOnErrors];
@@ -1712,9 +1846,17 @@ export type GetRepoHasDependentsData = {
 
 export type GetRepoHasDependentsErrors = {
     /**
+     * Repo was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetRepoHasDependentsError = GetRepoHasDependentsErrors[keyof GetRepoHasDependentsErrors];
@@ -1757,9 +1899,17 @@ export type GetRepoGithubDependentsData = {
 
 export type GetRepoGithubDependentsErrors = {
     /**
+     * Repo was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetRepoGithubDependentsError = GetRepoGithubDependentsErrors[keyof GetRepoGithubDependentsErrors];
@@ -1787,9 +1937,17 @@ export type GetRepoMaintenanceProfileData = {
 
 export type GetRepoMaintenanceProfileErrors = {
     /**
+     * Repo or maintenance profile was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetRepoMaintenanceProfileError = GetRepoMaintenanceProfileErrors[keyof GetRepoMaintenanceProfileErrors];
@@ -1834,9 +1992,17 @@ export type GetRepoContributorsData = {
 
 export type GetRepoContributorsErrors = {
     /**
+     * Repo was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetRepoContributorsError = GetRepoContributorsErrors[keyof GetRepoContributorsErrors];
@@ -1864,9 +2030,17 @@ export type GetRepoData = {
 
 export type GetRepoErrors = {
     /**
+     * Repo was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetRepoError = GetRepoErrors[keyof GetRepoErrors];
@@ -1909,6 +2083,10 @@ export type ListContributorsErrors = {
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type ListContributorsError = ListContributorsErrors[keyof ListContributorsErrors];
@@ -1936,9 +2114,17 @@ export type GetContributorData = {
 
 export type GetContributorErrors = {
     /**
+     * Contributor was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetContributorError = GetContributorErrors[keyof GetContributorErrors];
@@ -1983,6 +2169,10 @@ export type ListGitlogArtifactsErrors = {
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type ListGitlogArtifactsError = ListGitlogArtifactsErrors[keyof ListGitlogArtifactsErrors];
@@ -2010,9 +2200,17 @@ export type GetGitlogArtifactData = {
 
 export type GetGitlogArtifactErrors = {
     /**
+     * Gitlog artifact was not found.
+     */
+    404: HttpErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded.
+     */
+    429: HttpErrorResponse;
 };
 
 export type GetGitlogArtifactError = GetGitlogArtifactErrors[keyof GetGitlogArtifactErrors];

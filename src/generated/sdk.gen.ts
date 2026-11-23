@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetContributorData, GetContributorErrors, GetContributorResponses, GetGitlogArtifactData, GetGitlogArtifactErrors, GetGitlogArtifactResponses, GetMetadataData, GetMetadataResponses, GetProjectContributorsData, GetProjectContributorsErrors, GetProjectContributorsResponses, GetProjectData, GetProjectDependsOnData, GetProjectDependsOnErrors, GetProjectDependsOnResponses, GetProjectErrors, GetProjectHasDependentsData, GetProjectHasDependentsErrors, GetProjectHasDependentsResponses, GetProjectReposData, GetProjectReposErrors, GetProjectReposResponses, GetProjectResponses, GetRepoContributorsData, GetRepoContributorsErrors, GetRepoContributorsResponses, GetRepoData, GetRepoDependsOnData, GetRepoDependsOnErrors, GetRepoDependsOnResponses, GetRepoErrors, GetRepoGithubDependentsData, GetRepoGithubDependentsErrors, GetRepoGithubDependentsResponses, GetRepoHasDependentsData, GetRepoHasDependentsErrors, GetRepoHasDependentsResponses, GetRepoMaintenanceProfileData, GetRepoMaintenanceProfileErrors, GetRepoMaintenanceProfileResponses, GetRepoResponses, GetSbomSubmissionData, GetSbomSubmissionErrors, GetSbomSubmissionResponses, HealthData, HealthResponses, IngestSbomData, IngestSbomErrors, IngestSbomResponses, ListContributorsData, ListContributorsErrors, ListContributorsResponses, ListGitlogArtifactsData, ListGitlogArtifactsErrors, ListGitlogArtifactsResponses, ListProjectsData, ListProjectsErrors, ListProjectsResponses, ListReposData, ListReposErrors, ListReposResponses, ListSbomSubmissionsData, ListSbomSubmissionsErrors, ListSbomSubmissionsResponses } from './types.gen';
+import type { GetContributorData, GetContributorErrors, GetContributorResponses, GetGitlogArtifactData, GetGitlogArtifactErrors, GetGitlogArtifactResponses, GetMetadataData, GetMetadataErrors, GetMetadataResponses, GetProjectContributorsData, GetProjectContributorsErrors, GetProjectContributorsResponses, GetProjectData, GetProjectDependsOnData, GetProjectDependsOnErrors, GetProjectDependsOnResponses, GetProjectErrors, GetProjectHasDependentsData, GetProjectHasDependentsErrors, GetProjectHasDependentsResponses, GetProjectReposData, GetProjectReposErrors, GetProjectReposResponses, GetProjectResponses, GetRepoContributorsData, GetRepoContributorsErrors, GetRepoContributorsResponses, GetRepoData, GetRepoDependsOnData, GetRepoDependsOnErrors, GetRepoDependsOnResponses, GetRepoErrors, GetRepoGithubDependentsData, GetRepoGithubDependentsErrors, GetRepoGithubDependentsResponses, GetRepoHasDependentsData, GetRepoHasDependentsErrors, GetRepoHasDependentsResponses, GetRepoMaintenanceProfileData, GetRepoMaintenanceProfileErrors, GetRepoMaintenanceProfileResponses, GetRepoResponses, GetSbomSubmissionData, GetSbomSubmissionErrors, GetSbomSubmissionResponses, HealthData, HealthErrors, HealthResponses, IngestSbomData, IngestSbomErrors, IngestSbomResponses, ListContributorsData, ListContributorsErrors, ListContributorsResponses, ListGitlogArtifactsData, ListGitlogArtifactsErrors, ListGitlogArtifactsResponses, ListProjectsData, ListProjectsErrors, ListProjectsResponses, ListReposData, ListReposErrors, ListReposResponses, ListSbomSubmissionsData, ListSbomSubmissionsErrors, ListSbomSubmissionsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -23,7 +23,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  *
  * Return the current readiness status and application version.
  */
-export const health = <ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>): RequestResult<HealthResponses, unknown, ThrowOnError> => (options?.client ?? client).get<HealthResponses, unknown, ThrowOnError>({ url: '/health', ...options });
+export const health = <ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>): RequestResult<HealthResponses, HealthErrors, ThrowOnError> => (options?.client ?? client).get<HealthResponses, HealthErrors, ThrowOnError>({ url: '/health', ...options });
 
 /**
  * List SBOM submissions
@@ -54,7 +54,7 @@ export const getSbomSubmission = <ThrowOnError extends boolean = false>(options:
  * Counts are computed on-the-fly via simple ``COUNT(*)`` queries.  No
  * caching is applied in this dev version — queries hit the DB directly.
  */
-export const getMetadata = <ThrowOnError extends boolean = false>(options?: Options<GetMetadataData, ThrowOnError>): RequestResult<GetMetadataResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetMetadataResponses, unknown, ThrowOnError>({ url: '/metadata', ...options });
+export const getMetadata = <ThrowOnError extends boolean = false>(options?: Options<GetMetadataData, ThrowOnError>): RequestResult<GetMetadataResponses, GetMetadataErrors, ThrowOnError> => (options?.client ?? client).get<GetMetadataResponses, GetMetadataErrors, ThrowOnError>({ url: '/metadata', ...options });
 
 /**
  * List projects

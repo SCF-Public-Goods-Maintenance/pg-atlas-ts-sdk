@@ -560,6 +560,21 @@ export const GithubDependentsSummarySchema = {
     description: 'Freshness and completeness summary for a source repo\'s observations.\n\n``observations_as_of`` is the finish time of the latest applied\nlisting-complete run; ``reported_counts_as_of`` is the finish time of the\nlatest applied counts-complete run. The two can point to different runs,\nso the reported totals always carry their own timestamp. Reported header\ntotals may exceed the enumerable public entries and, for multi-package\nrepositories, are per-package sums that can double count a dependent\nusing several packages.'
 } as const;
 
+export const HTTPErrorResponseSchema = {
+    properties: {
+        detail: {
+            type: 'string',
+            title: 'Detail'
+        }
+    },
+    type: 'object',
+    required: [
+        'detail'
+    ],
+    title: 'HTTPErrorResponse',
+    description: 'Generic FastAPI HTTP error envelope with a string detail value.'
+} as const;
+
 export const HTTPValidationErrorSchema = {
     properties: {
         detail: {
@@ -2053,6 +2068,29 @@ export const ScfSubmissionSchema = {
     ],
     title: 'ScfSubmission',
     description: 'A single SCF funding round submission.'
+} as const;
+
+export const SpdxValidationFailedSchema = {
+    properties: {
+        error: {
+            type: 'string',
+            title: 'Error'
+        },
+        messages: {
+            items: {
+                type: 'string'
+            },
+            type: 'array',
+            title: 'Messages'
+        }
+    },
+    type: 'object',
+    required: [
+        'error',
+        'messages'
+    ],
+    title: 'SpdxValidationFailed',
+    description: 'Custom validation failure returned by SPDX submissions.'
 } as const;
 
 export const SubmissionStatusSchema = {
